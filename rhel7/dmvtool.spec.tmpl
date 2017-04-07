@@ -1,0 +1,25 @@
+Name:           dmvtool
+Version:        0.2
+Release:        0
+Summary:        Microsoft SQL DMVTool 0.2
+AutoReqProv:    no
+License:        Commercial
+
+Requires: glibc, fuse, fuse-devel, freetds
+
+%description
+This package contains the DMVTool which can be used to fetch certain DMV from SQL Servers using FUSE filesystem.
+
+%{?systemd_requires}
+BuildRequires: systemd
+
+%install
+cd %{_srcdir}
+make install DESTDIR=%{buildroot}
+
+%files
+%defattr(-, root, root)
+/usr/bin/*
+/opt/mssql-dmvtool/*
+/usr/share/doc/dmvtool/*
+/usr/lib64/*

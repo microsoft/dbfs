@@ -1,0 +1,9 @@
+#!/usr/bin/make -f
+
+override_dh_usrlocal:
+
+override_dh_auto_install:
+	make -e -j install DESTDIR=$$(pwd)/debian/dmvtool
+
+%:
+	dh $@

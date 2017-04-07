@@ -1,0 +1,21 @@
+Source: dmvtool
+Section: misc
+Priority: extra
+Build-Depends: debhelper (>=9),
+               freetds-dev,
+               libunwind-dev,
+               fuse,
+               libfuse2,
+               libfuse-dev,
+               libattr1-dev,
+               libavahi-common-dev
+Maintainer: Microsoft Data Platform Group <dpgswdist@microsoft.com>
+
+Package: dmvtool
+Section: misc
+Priority: extra
+Architecture: amd64
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: DMVTool 0.2
+ This package contains the DMVTool which can be used to fetch certain DMV from SQL Servers using FUSE filesystem
+

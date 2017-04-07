@@ -1,0 +1,7 @@
+dmvtool FOR MICROSOFT dmvtool 0.2
+PLEASE NOTE: Refer to your license terms for Microsoft SQL SERVER (PREVIEW) software (the “software”) to identify the entity licensing this supplement to you and for support information. You may use a copy of this supplement with each validly licensed copy of the software. You may not use the supplement if you do not have a license for the software. The license terms for the software apply to your use of this supplement.
+
+
+dmvtool POUR MICROSOFT dmvtool 0.2
+REMARQUE : Consultez les termes du contrat de licence pour le logiciel Microsoft SQL SERVER (PREVIEW) (le « logiciel ») afin d’identifier l’entité qui vous concède ce supplément et d’obtenir des informations sur le support technique. Vous pouvez utiliser une copie de ce supplément avec chaque copie concédée sous licence du logiciel. Vous n’êtes pas autorisé à utiliser ce supplément si vous n’êtes pas titulaire d’une licence pour le logiciel. Les termes du contrat de licence du logiciel s’appliquent à l’utilisation de ce supplément.
+

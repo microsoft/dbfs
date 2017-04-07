@@ -1,6 +1,11 @@
-
-# .v4p backup files
-*~.xml
-
-# Dynamic plugins .dll
-bin/
+output/
+source/*.o
+source/dmvtool
+debian/dmvtool/
+debian/changelog
+debian/control
+debian/dmvtool.debhelper.log
+debian/dmvtool.substvars
+debian/files
+debian/debhelper-build-stamp
+.obj/
