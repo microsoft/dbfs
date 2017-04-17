@@ -1,4 +1,4 @@
-TARGET=dmvtool
+TARGET=DBFS
 TARGET_SRC_DIR=source
 TARGET_DIR=output
 TARGET_BIN_DIR=$(TARGET_DIR)/bin
@@ -10,7 +10,7 @@ DESTDIR ?= /
 OBJDIR :=.obj
 
 ## Common packaging variables
-DMVTOOL_PACKAGE_VERSION=$(shell cat version.txt)
+DBFS_PACKAGE_VERSION=$(shell cat version.txt)
 
 ## Debian packaging variables
 DEB_PACKAGE_NAME=$(TARGET)
@@ -30,14 +30,14 @@ $(TARGET):
 
 install: $(TARGET)
 	$(AT)mkdir -p $(DESTDIR)/usr/bin/
-	$(AT)mkdir -p $(DESTDIR)/opt/mssql-dmvtool/
-	$(AT)mkdir -p $(DESTDIR)/usr/share/doc/dmvtool/
+	$(AT)mkdir -p $(DESTDIR)/opt/mssql-DBFS/
+	$(AT)mkdir -p $(DESTDIR)/usr/share/doc/DBFS/
 
-	$(AT)cp $(TARGET_SRC_DIR)/$(TARGET) $(DESTDIR)/opt/mssql-dmvtool/
-	$(AT)ln -sf /opt/mssql-dmvtool/dmvtool $(DESTDIR)/usr/bin/dmvtool
+	$(AT)cp $(TARGET_SRC_DIR)/$(TARGET) $(DESTDIR)/opt/mssql-DBFS/
+	$(AT)ln -sf /opt/mssql-DBFS/DBFS $(DESTDIR)/usr/bin/DBFS
 	
-	$(AT)cp common/LICENSE.TXT $(DESTDIR)/usr/share/doc/dmvtool/
-	$(AT)cp common/THIRDPARTYNOTICES.TXT $(DESTDIR)/usr/share/doc/dmvtool
+	$(AT)cp common/LICENSE.TXT $(DESTDIR)/usr/share/doc/DBFS/
+	$(AT)cp common/THIRDPARTYNOTICES.TXT $(DESTDIR)/usr/share/doc/DBFS
 	
 # Need to copy the libc++* libraries when making the RHEL package
 #
@@ -56,7 +56,7 @@ clean:
 	$(AT)rm -rf $(OBJDIR)
 	$(AT)rm -rf $(TARGET_DIR)
 	$(AT)make clean --no-print-directory -C $(TARGET_SRC_DIR)
-	$(AT)rm -rf debian/dmvtool
+	$(AT)rm -rf debian/DBFS
 	$(AT)rm -rf debian/files
 
 package-ubuntu:
@@ -66,9 +66,9 @@ package-ubuntu:
 _package-ubuntu:
 	@echo [DEBUILD] Building Debian package
 
-	$(AT)echo "$(DEB_PACKAGE_NAME) ($(DMVTOOL_PACKAGE_VERSION)) stable; urgency=medium" > debian/changelog
+	$(AT)echo "$(DEB_PACKAGE_NAME) ($(DBFS_PACKAGE_VERSION)) stable; urgency=medium" > debian/changelog
 	$(AT)echo "" >> debian/changelog
-	$(AT)echo "  * DMVTool v($(DMVTOOL_PACKAGE_VERSION)) release" >> debian/changelog
+	$(AT)echo "  * DBFS v($(DBFS_PACKAGE_VERSION)) release" >> debian/changelog
 	$(AT)echo "" >> debian/changelog
 	$(AT)echo " -- Microsoft Data Platform Group <dpgswdist@microsoft.com>  $(shell date +'%a, %d %b %Y %H:%M:%S %z')" >> debian/changelog
 	$(AT)echo "" >> debian/changelog
@@ -79,7 +79,7 @@ _package-ubuntu:
 	$(AT)debuild $(LINTIAN) --preserve-env -b -us -uc 2>&1
 	$(AT)mkdir -p $(TARGET_DIR)/packages/ubuntu
 
-	$(AT)rsync -av ../$(DEB_PACKAGE_NAME)_$(DMVTOOL_PACKAGE_VERSION)_amd64.* $(DROP_DIRECTORY)/packages/ubuntu
+	$(AT)rsync -av ../$(DEB_PACKAGE_NAME)_$(DBFS_PACKAGE_VERSION)_amd64.* $(DROP_DIRECTORY)/packages/ubuntu
 	
 	$(AT)rm -f ../$(DEB_PACKAGE_NAME)_*_amd64.*
 
@@ -93,6 +93,6 @@ _package-rhel7:
 	$(AT)mkdir -p $(OBJDIR)/rhel7
 	$(AT)mkdir -p $(DROP_DIRECTORY)/packages/rhel7
 
-	$(AT) cp rhel7/dmvtool.spec.tmpl $(OBJDIR)/rhel7/dmvtool.spec
-	$(AT)rpmbuild --define "_srcdir $$(pwd)" --define "_topdir $$(realpath $(OBJDIR)/rhel7/rpmbuild)" -bb $(OBJDIR)/rhel7/dmvtool.spec
+	$(AT) cp rhel7/DBFS.spec.tmpl $(OBJDIR)/rhel7/DBFS.spec
+	$(AT)rpmbuild --define "_srcdir $$(pwd)" --define "_topdir $$(realpath $(OBJDIR)/rhel7/rpmbuild)" -bb $(OBJDIR)/rhel7/DBFS.spec
 	$(AT)mv $(OBJDIR)/rhel7/rpmbuild/RPMS/x86_64/* $(DROP_DIRECTORY)/packages/rhel7
