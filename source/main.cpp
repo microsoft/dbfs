@@ -29,7 +29,7 @@ std::unordered_map<std::string, class ServerInfo*> g_ServerInfoMap;
 //
 bool g_UseLogFile;
 
-// Global variable used to track if DMVTool needs to be started in foreground
+// Global variable used to track if DBFS needs to be started in foreground
 //
 bool g_RunInForeground;
 
@@ -55,7 +55,7 @@ PrintUsageAndExit(
         "   -d/--dump-path      :  The dump directory used. Default = \"/tmp/sqlserver\" [OPTIONAL]\n"
         "   -v/--verbose        :  Start in verbose mode [OPTIONAL]\n"
         "   -l/--log-file       :  Path to the log file (only used if in verbose mode) [OPTIONAL]\n"
-        "   -f                  :  Run the DMVTool in foreground [OPTIONAL]\n"
+        "   -f                  :  Run DBFS in foreground [OPTIONAL]\n"
         "   -h                  :  Print usage"
         "\n", command);
     exit(-EINVAL);

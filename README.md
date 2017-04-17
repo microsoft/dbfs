@@ -40,7 +40,7 @@ Options:
    -d/--dump-path      :  The dump directory used. Default = "/tmp/sqlserver"
    -v/--verbose        :  Start in verbose mode
    -l/--log-file       :  Path to the log file (only used if in verbose mode)
-   -f                  :  Run the DMVTool in foreground
+   -f                  :  Run DBFS in foreground
    -h                  :  Print usage
 
 

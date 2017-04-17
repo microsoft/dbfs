@@ -4,7 +4,7 @@ include common.mk
 
 SOURCES=$(wildcard *.cpp)
 OBJECTS=$(SOURCES:.cpp=.o)
-TARGET=dmvtool
+TARGET=dbfs
 OBJDIR :=.obj
 
 all: $(TARGET)
