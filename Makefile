@@ -66,9 +66,9 @@ package-ubuntu:
 _package-ubuntu:
 	@echo [DEBUILD] Building Debian package
 
-	$(AT)echo "$(DEB_PACKAGE_NAME) ($(dbfs_PACKAGE_VERSION)) stable; urgency=medium" > debian/changelog
+	$(AT)echo "$(DEB_PACKAGE_NAME) ($(DBFS_PACKAGE_VERSION)) stable; urgency=medium" > debian/changelog
 	$(AT)echo "" >> debian/changelog
-	$(AT)echo "  * dbfs v($(dbfs_PACKAGE_VERSION)) release" >> debian/changelog
+	$(AT)echo "  * dbfs v($(DBFS_PACKAGE_VERSION)) release" >> debian/changelog
 	$(AT)echo "" >> debian/changelog
 	$(AT)echo " -- Microsoft Data Platform Group <dpgswdist@microsoft.com>  $(shell date +'%a, %d %b %Y %H:%M:%S %z')" >> debian/changelog
 	$(AT)echo "" >> debian/changelog
@@ -79,7 +79,7 @@ _package-ubuntu:
 	$(AT)debuild $(LINTIAN) --preserve-env -b -us -uc 2>&1
 	$(AT)mkdir -p $(TARGET_DIR)/packages/ubuntu
 
-	$(AT)rsync -av ../$(DEB_PACKAGE_NAME)_$(dbfs_PACKAGE_VERSION)_amd64.* $(DROP_DIRECTORY)/packages/ubuntu
+	$(AT)rsync -av ../$(DEB_PACKAGE_NAME)_$(DBFS_PACKAGE_VERSION)_amd64.* $(DROP_DIRECTORY)/packages/ubuntu
 	
 	$(AT)rm -f ../$(DEB_PACKAGE_NAME)_*_amd64.*
 
