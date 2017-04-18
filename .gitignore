@@ -1,11 +1,11 @@
 output/
 source/*.o
-source/dmvtool
-debian/dmvtool/
+source/dbfs
+debian/dbfs/
 debian/changelog
 debian/control
-debian/dmvtool.debhelper.log
-debian/dmvtool.substvars
+debian/dbfs.debhelper.log
+debian/dbfs.substvars
 debian/files
 debian/debhelper-build-stamp
 .obj/
