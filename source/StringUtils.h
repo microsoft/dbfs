@@ -1,9 +1,8 @@
 //****************************************************************************
-//               Copyright (c) Microsoft Corporation.
+//      Copyright (c) Microsoft Corporation. All rights reserved.
+//      Licensed under the MIT license.
 //
 // File: StringUtils.h
-//
-// Author: Scott Konersmann
 //
 // Purpose:
 //  This is a collection of string utilities for things missing in the

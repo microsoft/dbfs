@@ -1,9 +1,8 @@
 //****************************************************************************
-//               Copyright (c) Microsoft Corporation.
+//      Copyright (c) Microsoft Corporation. All rights reserved.
+//      Licensed under the MIT license.
 //
 // File: INIFile.h
-//
-// Author: Scott Konersmann
 //
 // Purpose:
 //  INI file parser class.  An INI file is a UTF8 (no Byte Order Mark)

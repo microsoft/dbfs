@@ -1,9 +1,8 @@
 //****************************************************************************
-//               Copyright (c) Microsoft Corporation.
+//      Copyright (c) Microsoft Corporation. All rights reserved.
+//      Licensed under the MIT license.
 //
 // File: StringUtils.cpp
-//
-// Author: Scott Konersmann
 //
 // Purpose:
 //   String utility functions for functionality not available in the standard

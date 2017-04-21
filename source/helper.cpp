@@ -1,9 +1,8 @@
 //****************************************************************************
-//               Copyright (c) Microsoft Corporation.
+//      Copyright (c) Microsoft Corporation. All rights reserved.
+//      Licensed under the MIT license.
 //
 // File: helper.c
-//
-// Author: Aditya Shantanu
 //
 // Purpose:
 //   This file contains the definitions of helper functions used by

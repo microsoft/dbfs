@@ -1,9 +1,8 @@
 //****************************************************************************
-//               Copyright (c) Microsoft Corporation.
+//      Copyright (c) Microsoft Corporation. All rights reserved.
+//      Licensed under the MIT license.
 //
 // File: main.cpp
-//
-// Author: Aditya Shantanu
 //
 // Purpose:
 //   This file contains definitions of functions used to parse the user

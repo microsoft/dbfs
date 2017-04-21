@@ -1,9 +1,8 @@
 //****************************************************************************
-//               Copyright (c) Microsoft Corporation.
+//      Copyright (c) Microsoft Corporation. All rights reserved.
+//      Licensed under the MIT license.
 //
 // File: SQLQuery.h
-//
-// Author: Aditya Shantanu
 //
 // Purpose:
 //   This file contains the backend function declarations used to query

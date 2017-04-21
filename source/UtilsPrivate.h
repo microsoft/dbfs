@@ -1,9 +1,8 @@
 //****************************************************************************
-//               Copyright (c) Microsoft Corporation.
+//      Copyright (c) Microsoft Corporation. All rights reserved.
+//      Licensed under the MIT license.
 //
 // File: UtilsPrivate.h
-//
-// Author: Aditya Shantanu
 //
 // Purpose:
 //  This just includes the necessary header files needed by the utility

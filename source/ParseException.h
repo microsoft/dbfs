@@ -1,9 +1,8 @@
 //****************************************************************************
-//               Copyright (c) Microsoft Corporation.
+//      Copyright (c) Microsoft Corporation. All rights reserved.
+//      Licensed under the MIT license.
 //
 // File: ParseException.h
-//
-// Author: Scott Konersmann
 //
 // Purpose:
 //   An exception class thrown during parsing to indicate an error in the

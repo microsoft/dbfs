@@ -1,9 +1,8 @@
 //****************************************************************************
-//               Copyright (c) Microsoft Corporation.
+//      Copyright (c) Microsoft Corporation. All rights reserved.
+//      Licensed under the MIT license.
 //
 // File: sqlfs.cpp
-//
-// Author: Aditya Shantanu
 //
 // Purpose:
 //   This file contains definitions of functions used by the FUSE
