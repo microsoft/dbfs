@@ -94,5 +94,5 @@ _package-rhel7:
 	$(AT)mkdir -p $(DROP_DIRECTORY)/packages/rhel7
 
 	$(AT) cp rhel7/dbfs.spec.tmpl $(OBJDIR)/rhel7/dbfs.spec
-	$(AT)rpmbuild --define "_srcdir $$(pwd)" --define "_topdir $$(realpath $(OBJDIR)/rhel7/rpmbuild)" -bb $(OBJDIR)/rhel7/DBFS.spec
+	$(AT)rpmbuild --define "_srcdir $$(pwd)" --define "_topdir $$(realpath $(OBJDIR)/rhel7/rpmbuild)" -bb $(OBJDIR)/rhel7/dbfs.spec
 	$(AT)mv $(OBJDIR)/rhel7/rpmbuild/RPMS/x86_64/* $(DROP_DIRECTORY)/packages/rhel7
