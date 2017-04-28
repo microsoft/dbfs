@@ -36,7 +36,7 @@ install: $(TARGET)
 	$(AT)cp $(TARGET_SRC_DIR)/$(TARGET) $(DESTDIR)/opt/mssql-dbfs/
 	$(AT)ln -sf /opt/mssql-dbfs/dbfs $(DESTDIR)/usr/bin/dbfs
 	
-	$(AT)cp common/LICENSE.TXT $(DESTDIR)/usr/share/doc/dbfs/
+	$(AT)cp LICENSE.TXT $(DESTDIR)/usr/share/doc/dbfs/
 	$(AT)cp common/THIRDPARTYNOTICES.TXT $(DESTDIR)/usr/share/doc/dbfs
 	
 # Need to copy the libc++* libraries when making the RHEL package
