@@ -36,7 +36,7 @@ install: $(TARGET)
 	$(AT)cp $(TARGET_SRC_DIR)/$(TARGET) $(DESTDIR)/opt/mssql-dbfs/
 	$(AT)ln -sf /opt/mssql-dbfs/dbfs $(DESTDIR)/usr/bin/dbfs
 	
-	$(AT)cp common/LICENSE.TXT $(DESTDIR)/usr/share/doc/dbfs/
+	$(AT)cp LICENSE.TXT $(DESTDIR)/usr/share/doc/dbfs/
 	$(AT)cp common/THIRDPARTYNOTICES.TXT $(DESTDIR)/usr/share/doc/dbfs
 	
 # Need to copy the libc++* libraries when making the RHEL package
@@ -94,5 +94,5 @@ _package-rhel7:
 	$(AT)mkdir -p $(DROP_DIRECTORY)/packages/rhel7
 
 	$(AT) cp rhel7/dbfs.spec.tmpl $(OBJDIR)/rhel7/dbfs.spec
-	$(AT)rpmbuild --define "_srcdir $$(pwd)" --define "_topdir $$(realpath $(OBJDIR)/rhel7/rpmbuild)" -bb $(OBJDIR)/rhel7/DBFS.spec
+	$(AT)rpmbuild --define "_srcdir $$(pwd)" --define "_topdir $$(realpath $(OBJDIR)/rhel7/rpmbuild)" -bb $(OBJDIR)/rhel7/dbfs.spec
 	$(AT)mv $(OBJDIR)/rhel7/rpmbuild/RPMS/x86_64/* $(DROP_DIRECTORY)/packages/rhel7

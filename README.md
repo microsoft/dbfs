@@ -59,15 +59,15 @@ There can be multiple such entries in the configuration file.
 
 # Building
 Install the following packages:\
-  sudo apt-get install\
-  freetds-dev\
-  freetds-bin\
-  libunwind-dev\
-  fuse\
-  libfuse2\
-  libfuse-dev\
-  libattr1-dev\
-  libavahi-common-dev\
+  sudo apt-get install \\\
+  freetds-dev \\\
+  freetds-bin \\\
+  libunwind-dev \\\
+  fuse \\\
+  libfuse2 \\\
+  libfuse-dev \\\
+  libattr1-dev \\\
+  libavahi-common-dev \\\
   -y
 
 To build the project:
@@ -75,6 +75,9 @@ To build the project:
 
 To build the ubuntu package:
   Run `make package-ubuntu` from root 
+
+To build the rhel7 package:
+  Run `make package-rhel7` from root 
 
 # Issues
 Please let us know of any issues you may have by filing an issue on this Github.
