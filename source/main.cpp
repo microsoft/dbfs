@@ -50,7 +50,7 @@ PrintUsageAndExit(
         "Usage: %s [Options]\n"
         "Options:\n"
         "   -m/--mount-path     :  The mount directory for SQL server(s) DMV files [REQUIRED]\n"
-        "   -c/--conf-file      :  Location of .conf file. [REQUIED]\n"
+        "   -c/--conf-file      :  Location of .conf file. [REQUIRED]\n"
         "   -d/--dump-path      :  The dump directory used. Default = \"/tmp/sqlserver\" [OPTIONAL]\n"
         "   -v/--verbose        :  Start in verbose mode [OPTIONAL]\n"
         "   -l/--log-file       :  Path to the log file (only used if in verbose mode) [OPTIONAL]\n"
