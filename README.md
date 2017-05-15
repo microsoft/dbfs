@@ -14,13 +14,21 @@ The [Microsoft Enterprise and Developer Privacy Statement](https://go.microsoft.
 
 This extension is licensed under the MIT License. Please see the third-party notices file for additional copyright notices and license terms applicable to portions of the software.
 
-# Installation 
-1. Download the .deb release package from this Github.
-3. Run the following command: 
-    `dpkg -i <downloaded_package.deb>`
-4. You can get any missing dependencies by running: 
-    `apt-get -f install`
-    or installing them manually  
+# Installation
+Ubuntu:\
+curl https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add -\
+curl https://packages.microsoft.com/config/ubuntu/16.04/prod.list | sudo tee /etc/apt/sources.list.d/msprod.list\
+sudo apt-get update \
+sudo apt-get install mssql-dbfs
+
+RHEL:\
+sudo su\
+curl https://packages.microsoft.com/config/rhel/7/prod.repo > /etc/yum.repos.d/msprod.repo\
+exit\
+sudo yum update\
+sudo yum install mssql-dbfs
+ 
+
 
 Check if your installation was successfull by running: 
     `dbfs -h`
