@@ -18,6 +18,20 @@ $ awk '{print $1,$5}' dm_os_sys_memory | column -t
 $ join -j 1 -o 1.1,1.16,1.17,2.5,2.8 <(sort -k1 dm_exec_connections) <(sort -k1 dm_exec_connections) -t $'\t' | sort -n -k1 | column -t
 ```
 
+# Quick Start 
+``` sh
+$ sudo apt-get install mssql-dbfs
+$ cd ~/demo/
+$ echo "[local_server]" > local_server.conf
+$ echo "hostname=00.000.000.000" >> local_server.conf
+$ echo "username=MyUserName" >> local_server.conf
+$ echo "password=MyPassword" >> local_server.conf
+$ echo "version=16" >> local_server.conf
+$ dbfs -m ~/demo/mount -c ~/demo/local_server.conf 
+$ cd ~/demo/mount/local_server
+$ ls
+```
+
 # Installation
 Ubuntu:
 ``` sh
