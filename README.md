@@ -6,28 +6,24 @@ DBFS uses FUSE to mount MS SQL Server DMVs as a virtual file system. This gives 
 # Installation
 Ubuntu:
 ``` sh
-$ curl https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add -
-$ curl https://packages.microsoft.com/config/ubuntu/16.04/prod.list | sudo tee /etc/apt/sources.list.d/msprod.list
-$ sudo apt-get update
-$ sudo apt-get install mssql-dbfs
+sudo wget https://github.com/Microsoft/dbfs/releases/download/0.1.5/dbfs_0.1.5_amd64.deb
+sudo dpkg -i dbfs_0.1.5_amd64.deb
+sudo apt-get install -f
 ```
 
 RHEL:
 ``` sh
-$ sudo su
-$ curl https://packages.microsoft.com/config/rhel/7/prod.repo > /etc/yum.repos.d/msprod.repo
-$ exit
-$ wget https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
-$ sudo rpm -ivh epel-release-latest-7.noarch.rpm
-$ sudo yum update
-$ sudo yum install mssql-dbfs
+sudo wget https://github.com/Microsoft/dbfs/releases/download/0.1.5/dbfs-0.1.5-0.x86_64.rpm
+sudo wget https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+sudo rpm -ivh epel-release-latest-7.noarch.rpm
+sudo yum update
+sudo yum install dbfs-0.1.5-0.x86_64.rpm
 ```
- 
-
 
 Check if your installation was successfull by running: 
     `dbfs -h`
 
+Note: DBFS for SUSE linux and apt-get/yum package installs for Ubuntu/Red Hat coming soon!
 
 # Quick Start 
 Change directory to a directory where you want to create your config file and mounting directory. Example:
