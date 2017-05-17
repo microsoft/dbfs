@@ -17,6 +17,8 @@ RHEL:
 $ sudo su
 $ curl https://packages.microsoft.com/config/rhel/7/prod.repo > /etc/yum.repos.d/msprod.repo
 $ exit
+$ wget https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+$ sudo rpm -ivh epel-release-latest-7.noarch.rpm
 $ sudo yum update
 $ sudo yum install mssql-dbfs
 ```
