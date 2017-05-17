@@ -19,18 +19,72 @@ $ join -j 1 -o 1.1,1.16,1.17,2.5,2.8 <(sort -k1 dm_exec_connections) <(sort -k1 
 ```
 
 # Quick Start 
+Change directory to a directory where you want to create your config file and mounting directory
 ``` sh
-$ sudo apt-get install mssql-dbfs
-$ cd ~/demo/
-$ echo "[local_server]" > local_server.conf
-$ echo "hostname=00.000.000.000" >> local_server.conf
-$ echo "username=MyUserName" >> local_server.conf
-$ echo "password=MyPassword" >> local_server.conf
-$ echo "version=16" >> local_server.conf
-$ dbfs -m ~/demo/mount -c ~/demo/local_server.conf 
-$ cd ~/demo/mount/local_server
-$ ls
+$ cd ~/demo
+``` 
+
+Create a directory you want to mount to
+``` 
+$ mkdir dmv
+``` 
+ 
+Create a file to store the configuration
+``` 
+$ touch dmvtool.config
+``` 
+ 
+Edit the config file using an editor like VI
+``` 
+$ vi dmvtool.config
+``` 
+[server friendly name]
+hostname=<HOSTNAME>
+username=<USERNAME>
+password=<PASSWORD>
+version=<VERSION>
+
+Or echo in the contents
+``` 
+$ echo "[local_server]" > dmvtool.config
+$ echo "hostname=00.000.000.000" >> dmvtool.config
+$ echo "username=MyUserName" >> dmvtool.config
+$ echo "password=MyPassword" >> dmvtool.config
+$ echo "version=16" >> dmvtool.config
+``` 
+ 
+Run the tool
 ```
+$ dmvtool -c ./[Config File] -m ./[Mount Directory]
+```
+ 
+Example
+```
+$ dmvtool -c ./dmvtool.config -m ./dmv
+```
+ 
+See DMV in the directory
+```
+$ cd dmv
+```
+ 
+You should see the list of your server friendly names.
+```
+$ cd <server friendly name>
+```
+ 
+You should see the list of DMVs as files. Look at the contents of one of the files:
+```
+$ more <dmv file name>
+```
+ 
+You can pipe the output from DMVTool to tools like cut (CSV) and jq (JSON) to format the data for better readability.
+ 
+By default, DMVTool runs in background. You can shut it down using the following commands:
+```
+$ ps -A | grep dmvtool kill -2 <dmvtool pid>
+```
+If you want to run it in the foreground you can pass the -f parameter. You can pass the -v parameter for verbose output if you are running the tool in the foreground.
 
 # Installation
 Ubuntu:
