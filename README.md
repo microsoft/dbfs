@@ -2,89 +2,6 @@
 
 DBFS uses FUSE to mount MS SQL Server DMVs as a virtual file system. This gives you the ability to explore information about your database (Dynamic Management Views) using native bash commands!
 
-# Examples
-<img src="https://github.com/Microsoft/dbfs/raw/master/common/dbfs_demo.gif" alt="demo" style="width:880px;"/>
-
-Demo Commands:
-``` sh
-$ dbfs -m ~/demo/mount -c ~/demo/local_server.conf 
-$ cd ~/demo/mount/local_server
-$ ls
-$ ls | grep -i os | grep -i memory
-$ cat dm_os_sys_memory
-$ cat dm_os_sys_memory.json
-$ cat dm_os_sys_memory.json | python -m json.tool
-$ awk '{print $1,$5}' dm_os_sys_memory | column -t
-$ join -j 1 -o 1.1,1.16,1.17,2.5,2.8 <(sort -k1 dm_exec_connections) <(sort -k1 dm_exec_connections) -t $'\t' | sort -n -k1 | column -t
-```
-
-# Quick Start 
-Change directory to a directory where you want to create your config file and mounting directory
-``` sh
-$ cd ~/demo
-``` 
-
-Create a directory you want to mount to
-``` 
-$ mkdir dmv
-``` 
- 
-Create a file to store the configuration
-``` 
-$ touch dmvtool.config
-``` 
- 
-Edit the config file using an editor like VI
-``` 
-$ vi dmvtool.config
-``` 
-[server friendly name]
-hostname=<HOSTNAME>
-username=<USERNAME>
-password=<PASSWORD>
-version=<VERSION>
-
-Or echo in the contents
-``` 
-$ echo "[local_server]" > dmvtool.config
-$ echo "hostname=00.000.000.000" >> dmvtool.config
-$ echo "username=MyUserName" >> dmvtool.config
-$ echo "password=MyPassword" >> dmvtool.config
-$ echo "version=16" >> dmvtool.config
-``` 
- 
-Run the tool
-```
-$ dmvtool -c ./[Config File] -m ./[Mount Directory]
-```
- 
-Example
-```
-$ dmvtool -c ./dmvtool.config -m ./dmv
-```
- 
-See DMV in the directory
-```
-$ cd dmv
-```
- 
-You should see the list of your server friendly names.
-```
-$ cd <server friendly name>
-```
- 
-You should see the list of DMVs as files. Look at the contents of one of the files:
-```
-$ more <dmv file name>
-```
- 
-You can pipe the output from DMVTool to tools like cut (CSV) and jq (JSON) to format the data for better readability.
- 
-By default, DMVTool runs in background. You can shut it down using the following commands:
-```
-$ ps -A | grep dmvtool kill -2 <dmvtool pid>
-```
-If you want to run it in the foreground you can pass the -f parameter. You can pass the -v parameter for verbose output if you are running the tool in the foreground.
 
 # Installation
 Ubuntu:
@@ -109,10 +26,79 @@ $ sudo yum install mssql-dbfs
 Check if your installation was successfull by running: 
     `dbfs -h`
 
+
+# Quick Start 
+Change directory to a directory where you want to create your config file and mounting directory. Example:
+``` sh
+$ cd ~/demo
+``` 
+
+Create a directory you want the DMVs to mount to
+``` 
+$ mkdir dmv
+``` 
+ 
+Create a file to store the configuration
+``` 
+touch dmvtool.config
+``` 
+ 
+Edit the config file using an editor like VI
+``` 
+vi dmvtool.config
+``` 
+The contents of the file should be
+``` 
+[server friendly name]
+hostname=[HOSTNAME]
+username=[DATBASE_LOGIN]
+password=[PASSWORD]
+version=[VERSION]
+``` 
+Example:\
+[server]\
+hostname=00.000.000.000\
+username=MyUserName\
+password=MyPassword\
+version=16
+
+Run the tool
+```
+dbfs -c ./[Config File] -m ./[Mount Directory]
+```
+ 
+Example
+```
+dbfs -c ./dmvtool.config -m ./dmv
+```
+ 
+See DMV in the directory
+```
+cd dmv
+```
+ 
+You should see the list of your friendly server names by running 'ls'
+```
+cd <server friendly name>
+```
+ 
+You should see the list of DMVs as files by running 'ls'. To Look at the contents of one of the files:
+```
+more <dmv file name>
+```
+ 
+You can pipe the output from DMVTool to tools like cut (CSV) and jq (JSON) to format the data for better readability.
+ 
+By default, DBFS runs in background. You can shut it down using the following commands:
+```
+ps -A | grep dbfs kill -2 <dmvtool pid>
+```
+If you want to run it in the foreground you can pass the -f parameter. You can pass the -v parameter for verbose output if you are running the tool in the foreground.
+
 # Usage
 Setup: 
 ``` sh
-$ dbfs -m <mount-path> -c <conf-file-path> [OPTIONS]
+dbfs -m <mount-path> -c <conf-file-path> [OPTIONS]
 ```
 
 Required:\
@@ -143,10 +129,26 @@ version=16
 The password is optional. If it is not provided for a server entry - user will be prompted for the password.
 There can be multiple such entries in the configuration file.
 
-# Building
-$ Install the following packages:
+# Examples
+<img src="https://github.com/Microsoft/dbfs/raw/master/common/dbfs_demo.gif" alt="demo" style="width:800px;"/>
+
+Demo Commands:
 ``` sh
-$ sudo apt-get install \
+$ dbfs -m ~/demo/mount -c ~/demo/local_server.conf 
+$ cd ~/demo/mount/local_server
+$ ls
+$ ls | grep -i os | grep -i memory
+$ cat dm_os_sys_memory
+$ cat dm_os_sys_memory.json
+$ cat dm_os_sys_memory.json | python -m json.tool
+$ awk '{print $1,$5}' dm_os_sys_memory | column -t
+$ join -j 1 -o 1.1,1.16,1.17,2.5,2.8 <(sort -k1 dm_exec_connections) <(sort -k1 dm_exec_connections) -t $'\t' | sort -n -k1 | column -t
+```
+
+# Building
+ Install the following packages:
+``` sh
+ sudo apt-get install \
   	freetds-dev \
   	freetds-bin \
   	libunwind-dev \
@@ -160,17 +162,17 @@ $ sudo apt-get install \
 
 To build the project:
 ``` sh
-$ make
+ make
 ``` 
 
 To build the ubuntu package:
 ``` sh
-$ make package-ubuntu
+ make package-ubuntu
 ``` 
 
 To build the rhel7 package:
 ``` sh
-$ make package-rhel7
+ make package-rhel7
 ``` 
 
 # Issues
