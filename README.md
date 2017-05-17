@@ -2,21 +2,30 @@
 
 DBFS uses FUSE to mount MS SQL Server DMVs as a virtual file system. This gives you the ability to explore information about your database (Dynamic Management Views) using native bash commands!
 
-# Examples
-<img src="https://github.com/Microsoft/dbfs/raw/master/common/dbfs_demo.gif" alt="demo" style="width:880px;"/>
 
-Demo Commands:
+# Installation
+Ubuntu:
 ``` sh
-$ dbfs -m ~/demo/mount -c ~/demo/local_server.conf 
-$ cd ~/demo/mount/local_server
-$ ls
-$ ls | grep -i os | grep -i memory
-$ cat dm_os_sys_memory
-$ cat dm_os_sys_memory.json
-$ cat dm_os_sys_memory.json | python -m json.tool
-$ awk '{print $1,$5}' dm_os_sys_memory | column -t
-$ join -j 1 -o 1.1,1.16,1.17,2.5,2.8 <(sort -k1 dm_exec_connections) <(sort -k1 dm_exec_connections) -t $'\t' | sort -n -k1 | column -t
+$ curl https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add -
+$ curl https://packages.microsoft.com/config/ubuntu/16.04/prod.list | sudo tee /etc/apt/sources.list.d/msprod.list
+$ sudo apt-get update
+$ sudo apt-get install mssql-dbfs
 ```
+
+RHEL:
+``` sh
+$ sudo su
+$ curl https://packages.microsoft.com/config/rhel/7/prod.repo > /etc/yum.repos.d/msprod.repo
+$ exit
+$ sudo yum update
+$ sudo yum install mssql-dbfs
+```
+ 
+
+
+Check if your installation was successfull by running: 
+    `dbfs -h`
+
 
 # Quick Start 
 Change directory to a directory where you want to create your config file and mounting directory
@@ -86,29 +95,6 @@ $ ps -A | grep dmvtool kill -2 <dmvtool pid>
 ```
 If you want to run it in the foreground you can pass the -f parameter. You can pass the -v parameter for verbose output if you are running the tool in the foreground.
 
-# Installation
-Ubuntu:
-``` sh
-$ curl https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add -
-$ curl https://packages.microsoft.com/config/ubuntu/16.04/prod.list | sudo tee /etc/apt/sources.list.d/msprod.list
-$ sudo apt-get update
-$ sudo apt-get install mssql-dbfs
-```
-
-RHEL:
-``` sh
-$ sudo su
-$ curl https://packages.microsoft.com/config/rhel/7/prod.repo > /etc/yum.repos.d/msprod.repo
-$ exit
-$ sudo yum update
-$ sudo yum install mssql-dbfs
-```
- 
-
-
-Check if your installation was successfull by running: 
-    `dbfs -h`
-
 # Usage
 Setup: 
 ``` sh
@@ -142,6 +128,22 @@ version=16
 
 The password is optional. If it is not provided for a server entry - user will be prompted for the password.
 There can be multiple such entries in the configuration file.
+
+# Examples
+<img src="https://github.com/Microsoft/dbfs/raw/master/common/dbfs_demo.gif" alt="demo" style="width:800px;"/>
+
+Demo Commands:
+``` sh
+$ dbfs -m ~/demo/mount -c ~/demo/local_server.conf 
+$ cd ~/demo/mount/local_server
+$ ls
+$ ls | grep -i os | grep -i memory
+$ cat dm_os_sys_memory
+$ cat dm_os_sys_memory.json
+$ cat dm_os_sys_memory.json | python -m json.tool
+$ awk '{print $1,$5}' dm_os_sys_memory | column -t
+$ join -j 1 -o 1.1,1.16,1.17,2.5,2.8 <(sort -k1 dm_exec_connections) <(sort -k1 dm_exec_connections) -t $'\t' | sort -n -k1 | column -t
+```
 
 # Building
 $ Install the following packages:
