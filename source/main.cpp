@@ -24,7 +24,7 @@ bool g_InVerbose;
 //
 std::unordered_map<std::string, class ServerInfo*> g_ServerInfoMap;
 
-// Global variable used to determine if logfile path was givem;
+// Global variable used to determine if log file path was given;
 //
 bool g_UseLogFile;
 
@@ -345,7 +345,7 @@ CheckAllSetPaths(void)
     status = CheckIfDirectoryExists(g_UserPaths.m_dumpPath.c_str());
     if (status)
     {
-        fprintf(stderr, "Dump direcotry '%s' should not exist at startup\n", 
+        fprintf(stderr, "Dump directory '%s' should not exist at startup\n", 
             g_UserPaths.m_dumpPath.c_str());
         assert(0);
     }
@@ -705,7 +705,8 @@ main(
     // Rejecting request if root is trying to run this
     if ((getuid() == 0) || (geteuid() == 0))
     {
-        fprintf(stderr, "Running as root opens unwanted security holes\n");
+        fprintf(stderr, "DBFS should not be started with root privileges. "
+                        "Please exit root before starting DBFS.\n");
         result = -1;
     }
 
