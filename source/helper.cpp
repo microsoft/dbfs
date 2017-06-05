@@ -249,7 +249,10 @@ CreateDMVFiles(
     {
         // Query SQL server for all the DMV files to be created.
         //
-        dmvQuery = "SELECT name from sys.system_views";
+        // ** Note **
+        // schema_id = 4 selects DMV's (leaves out INFORMATION_SCHEMA).
+        //
+        dmvQuery = "SELECT name from sys.system_views where schema_id = 4";
         result = ExecuteQuery(dmvQuery.c_str(), responseString, hostname,
             username, password, TYPE_TSV);
         if (result)
