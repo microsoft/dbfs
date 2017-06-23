@@ -295,6 +295,16 @@ CreateDMVFiles(
             strerror(errno));
     }
 
+    // Create the custom query folder for each server.
+    //
+    string customQueryFolderPath = fpath + LINUX_PATH_DELIM + CUSTOM_QUERY_FOLDER_NAME;
+    result = mkdir(customQueryFolderPath.c_str(), DEFAULT_PERMISSIONS);
+    if (result)
+    {
+        PrintMsg("mkdir failed for %s- %s\n", customQueryFolderPath.c_str(),
+                 strerror(errno));
+    }
+
     if (!result)
     {
         // Query SQL server for all the DMV files to be created.

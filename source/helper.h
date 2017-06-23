@@ -8,16 +8,12 @@
 //   This file contains the declarations of helper functions used by
 //   sqlfs and SQLQuery.
 //
-
 #pragma once
 
-#ifndef _SQL_HELPER_H_
-#define _SQL_HELPER_H_
-
-#define SUCCESS 0
-#define FAILURE 1
-
-#define DEFAULT_PERMISSIONS 0777
+#define SUCCESS                 0
+#define FAILURE                 1
+#define DEFAULT_PERMISSIONS     0777
+#define LINUX_PATH_DELIM        "/"
 
 // This method concatenates the dump directory path to the provided 
 // relative path.
@@ -81,5 +77,3 @@ CreateDMVFiles(
 //
 void
 KillSelf();
-
-#endif

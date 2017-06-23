@@ -8,11 +8,7 @@
 //   This file contains the declarations of various structures
 //   used by the SQL FS to get server information and paths.
 //
-
 #pragma once
-
-#ifndef _SQL_FS_H_
-#define _SQL_FS_H_
 
 #define MAX_ARGS                8
 
@@ -39,5 +35,3 @@ public:
 };
 
 int StartFuse(char* ProgramName);
-
-#endif

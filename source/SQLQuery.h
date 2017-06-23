@@ -8,11 +8,7 @@
 //   This file contains the backend function declarations used to query
 //   the SQL server.
 //
-
 #pragma once
-
-#ifndef _SQL__QUERY_H_
-#define _SQL__QUERY_H_
 
 #define progName                        "sqlserverFS"
 #define dbName                          "master"
@@ -48,4 +44,3 @@ VerifyServerInfo(
     string username,
     string password);
 
-#endif

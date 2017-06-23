@@ -11,9 +11,6 @@
 //
 #pragma once
 
-#ifndef _UTILS_PRIVATE_
-#define _UTILS_PRIVATE_ 
-
 // ---------------------------------------------------------------------------
 // C++ STL Headers
 //
@@ -149,6 +146,7 @@ using std::cin;
 #include "helper.h"
 #include "INIFile.h"
 #include "ParseException.h"
+#include "CustomQuery.h"
 
 // Common symbols needed by all files.
 //
@@ -158,5 +156,3 @@ extern unordered_map<string, class ServerInfo*> g_ServerInfoMap;
 extern bool g_UseLogFile;
 extern bool g_RunInForeground;
 extern char g_LocallyGeneratedFiles[];
-
-#endif
