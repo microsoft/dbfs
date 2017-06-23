@@ -155,7 +155,7 @@ ParseArguments(
     {
         // Default values
         //
-        g_UserPaths.m_dumpPath = "/tmp/" + dumpDirPath + "/";
+        g_UserPaths.m_dumpPath = "/tmp/" + dumpDirPath + LINUX_PATH_DELIM;
 
         mountSet = false;
         confSet = false;

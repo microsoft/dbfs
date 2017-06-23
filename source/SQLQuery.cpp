@@ -18,7 +18,7 @@
 //    error has occurred.
 //
 // Returns:
-//    none.
+//    int
 //
 int DBErrorHandler(
     DBPROCESS* dbproc,
