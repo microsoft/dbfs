@@ -13,10 +13,6 @@
 
 #include "UtilsPrivate.h"
 
-extern struct SQLFsPaths g_UserPaths;
-extern unordered_map<string, class ServerInfo*> g_ServerInfoMap;
-extern bool g_RunInForeground;
-
 // ---------------------------------------------------------------------------
 // Method: GetattrLocalImpl
 //
@@ -52,7 +48,7 @@ GetattrLocalImpl(
 // Method: AccessLocalImpl
 //
 // Description:
-//    This method redirects the access system call the dump directory.
+//    This method redirects the access system call to the dump directory.
 //
 // Returns:
 //    0 on success and -errno on error.
@@ -80,7 +76,7 @@ AccessLocalImpl(
 // Method: ReadlinkLocalImpl
 //
 // Description:
-//    This method redirects the readlink system call the dump directory.
+//    This method redirects the readlink system call to the dump directory.
 //
 // Returns:
 //    0 on success and -errno on error.
@@ -113,7 +109,7 @@ ReadlinkLocalImpl(
 // Method: ReaddirLocalImpl
 //
 // Description:
-//    This method redirects the readdir system call the dump directory.
+//    This method redirects the readdir system call to the dump directory.
 //
 // Returns:
 //    0 on success and -errno on error.
@@ -163,7 +159,7 @@ ReaddirLocalImpl(
 // Method: MknodLocalImpl
 //
 // Description:
-//    This method redirects the mknod system call the dump directory.
+//    This method redirects the mknod system call to the dump directory.
 //
 // Returns:
 //    0 on success and -errno on error.
@@ -187,7 +183,7 @@ MknodLocalImpl(
             result = close(result);
             if (result)
             {
-                result = ReturnErrnoAndPrintError(__FUNCTION__, "close fail");
+                result = ReturnErrnoAndPrintError(__FUNCTION__, "close failed");
             }
         }
         else
@@ -219,7 +215,7 @@ MknodLocalImpl(
 // Method: MkdirLocalImpl
 //
 // Description:
-//    This method redirects the mkdir system call the dump directory.
+//    This method redirects the mkdir system call to the dump directory.
 //
 // Returns:
 //    0 on success and -errno on error.
@@ -247,7 +243,7 @@ MkdirLocalImpl(
 // Method: UnlinkLocalImpl
 //
 // Description:
-//    This method redirects the unlink system call the dump directory.
+//    This method redirects the unlink system call to the dump directory.
 //
 // Returns:
 //    0 on success and -errno on error.
@@ -274,7 +270,7 @@ UnlinkLocalImpl(
 // Method: RmdirLocalImpl
 //
 // Description:
-//    This method redirects the rmdir system call the dump directory.
+//    This method redirects the rmdir system call to the dump directory.
 //
 // Returns:
 //    0 on success and -errno on error.
@@ -301,7 +297,7 @@ RmdirLocalImpl(
 // Method: SymlinkLocalImpl
 //
 // Description:
-//    This method redirects the symlink system call the dump directory.
+//    This method redirects the symlink system call to the dump directory.
 //
 // Returns:
 //    0 on success and -errno on error.
@@ -331,7 +327,7 @@ SymlinkLocalImpl(
 // Method: RenameLocalImpl
 //
 // Description:
-//    This method redirects the rename system call the dump directory.
+//    This method redirects the rename system call to the dump directory.
 //
 // Returns:
 //    0 on success and -errno on error.
@@ -361,7 +357,7 @@ RenameLocalImpl(
 // Method: LinkLocalImpl
 //
 // Description:
-//    This method redirects the link system call the dump directory.
+//    This method redirects the link system call to the dump directory.
 //
 // Returns:
 //    0 on success and -errno on error.
@@ -391,7 +387,7 @@ LinkLocalImpl(
 // Method: ChmodLocalImpl
 //
 // Description:
-//    This method redirects the chmod system call the dump directory.
+//    This method redirects the chmod system call to the dump directory.
 //
 // Returns:
 //    0 on success and -errno on error.
@@ -419,7 +415,7 @@ ChmodLocalImpl(
 // Method: ChownLocalImpl
 //
 // Description:
-//    This method redirects the chown system call the dump directory.
+//    This method redirects the chown system call to the dump directory.
 //
 // Returns:
 //    0 on success and -errno on error.
@@ -448,7 +444,7 @@ ChownLocalImpl(
 // Method: TruncateLocalImpl
 //
 // Description:
-//    This method redirects the truncate system call the dump directory.
+//    This method redirects the truncate system call to the dump directory.
 //
 // Returns:
 //    0 on success and -errno on error.
@@ -476,7 +472,7 @@ TruncateLocalImpl(
 // Method: UtimensLocalImpl
 //
 // Description:
-//    This method redirects the utimens system call the dump directory.
+//    This method redirects the utimens system call to the dump directory.
 //
 // Returns:
 //    0 on success and -errno on error.
@@ -503,7 +499,71 @@ UtimensLocalImpl(
 }
 
 // ---------------------------------------------------------------------------
-// Method: OpenLocalImpl
+// Method: GetFileDescriptorForPath
+//
+// Description:
+//    This method checks if an fd is already stored in fuse_file_info
+//    else it will open the file at the path provided.
+//
+// Returns:
+//    None. (value of fd would indicate success or failure).
+//
+static void
+GetFileDescriptorForPath(
+    string path,
+    struct fuse_file_info* fi,
+    int& fd)
+{
+    string fpath;
+
+    // If we don't already have a fd, open the file.
+    //
+    if (!fi)
+    {
+        fpath = CalculateDumpPath(path);
+
+        // Open the file.
+        //
+        fd = open(fpath.c_str(), O_RDONLY);
+        if (fd == -1)
+        {
+            ReturnErrnoAndPrintError(__FUNCTION__, "open failed");
+        }
+    }
+    else
+    {
+        fd = fi->fh;
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Method: CloseFileDesciptorIfOpened
+//
+// Description:
+//    This method will close the fd provided only if provided fuse_file_info
+//    pointer is null - because that is the case when GetFileDescriptorForPath
+//    would have opened a fd.
+//
+// Returns:
+//    None.
+//
+static void
+CloseFileDesciptorIfOpened(
+    string path,
+    struct fuse_file_info* fi,
+    int fd)
+{
+    if (!fi)
+    {
+        int result = close(fd);
+        if (result)
+        {
+            result = ReturnErrnoAndPrintError(__FUNCTION__, "close failed");
+        }
+    }
+}
+
+// Method: OpenDmvFile
 //
 // Description:
 //    This function is responsible for filling the file(DMV) being opened 
@@ -514,8 +574,7 @@ UtimensLocalImpl(
 //    appropriate SQL query is sent to the required server. The response of 
 //    the SQL Query is saved into the file.
 //
-//    This method also redirects the open system call to the dump directory.
-//    This acts as the initial sanity check (file existance and permissions).
+//    path - relative path from the mount directory
 //
 // Returns:
 //    0 on success, 
@@ -523,13 +582,11 @@ UtimensLocalImpl(
 //    -1 on internal error.
 //
 static int
-OpenLocalImpl(
-const char* path,
-struct fuse_file_info* fi)
+GetDmvFileContent(
+    string path)
 {
-    int                 result = 0;
-    int                 fd;
-    string              fpath;
+    fprintf(stderr, "%s START\n", __FUNCTION__);
+    int                 error = 0;
     vector<string>      tokens;
     string              filename;
     string              query;
@@ -541,19 +598,16 @@ struct fuse_file_info* fi)
     string              responseString;
     string              tempString1;
     string              tempString2;
+    string              dumpPath;
+    int                 fd;
 
-    fpath = CalculateDumpPath(path);
+    dumpPath = CalculateDumpPath(path);
 
-    fd = open(fpath.c_str(), fi->flags);
-    if (fd == -1)
+    // Open the file.
+    //
+    fd = open(dumpPath.c_str(), O_WRONLY);
+    if (fd != -1)
     {
-        result = ReturnErrnoAndPrintError(__FUNCTION__, "open failed");
-    }
-
-    if (!result)
-    {
-        close(fd);
-
         // Extract SQL server name, DMV name and type
         // Tokenising the path.
         //
@@ -595,50 +649,143 @@ struct fuse_file_info* fi)
         //
         GetServerDetails(servername, hostname, username, password);
 
-        result = ExecuteQuery(query.c_str(), responseString, hostname.c_str(),
-            username.c_str(), password.c_str(), type);
-        if (result)
+        error = ExecuteQuery(query, responseString, hostname,
+                                username, password, type);
+
+        if (!error)
         {
-            PrintMsg("Querying the SQL failed. ret = %d\n", result);
+            // File was already opened and it's file descriptor saved for use.
+            //
+            if (pwrite(fd, responseString.c_str(), responseString.length(), 0) == -1)
+            {
+                error = ReturnErrnoAndPrintError(__FUNCTION__, "pwrite failed");
+            }
         }
+        else
+        {
+            PrintMsg("Querying the SQL failed. error = %d\n", error);
+        }
+        
+        close(fd);
+    }
+    else
+    {
+        error = ReturnErrnoAndPrintError(__FUNCTION__, "open failed");
     }
 
-    if (!result)
+    fprintf(stderr, "%s FINISH with result %d\n", __FUNCTION__, error);
+
+    return error;
+}
+
+// ---------------------------------------------------------------------------
+// Method: OpenLocalImpl
+//
+// Description:
+//    This method implements the open system call in the following manner:
+//    1. It will redirect the open system call to the dump directory and save
+//       file description in the fuse_file_info pointer passed in.
+//    2. If this is a DMV - it will also query the server for the content.
+//
+// Returns:
+//    0 on success, 
+//    -errno if a system call failed,
+//    -1 on internal error.
+//
+static int
+OpenLocalImpl(
+    const char* path,
+    struct fuse_file_info* fi)
+{
+    fprintf(stderr, "%s START\n", __FUNCTION__);
+    int error = 0;
+    int fd;
+    string fpath;
+
+    fpath = CalculateDumpPath(path);
+
+    // Open the file.
+    //
+    fd = open(fpath.c_str(), O_RDONLY);
+    if (fd == -1)
     {
-        // Write the data into the DMV file 
-        // (Will need to open it for write)
+        error = ReturnErrnoAndPrintError(__FUNCTION__, "open failed");
+    }
+    else
+    {
+        // Save fd for later use.
         //
-        fd = open(fpath.c_str(), O_WRONLY);
-        if (fd == -1)
-        {
-            result = ReturnErrnoAndPrintError(__FUNCTION__, "temp open failed");
-        }
+        fi->fh = fd;
+        fprintf(stderr, "\t** Open successful with FD = %d flags %d\n", fd, fi->flags);
     }
 
-    if (!result)
+    if (!error)
     {
-
-        result = pwrite(fd, responseString.c_str(), responseString.length(), 0);
-        if (result == -1)
+        // For DMV file, fetch the content.
+        //
+        if (IsDbfsFile(path))
         {
-            result = ReturnErrnoAndPrintError(__FUNCTION__, "pwrite failed");
-        }
+            if (strstr(path, CUSTOM_QUERY_FOLDER_NAME))
+            {
+                // Tokenising the path.
+                //
+                tokens = Split(path, '/');
+                
+                // Path is of the form <servername>/<customQueries>/<filename>
+                // On success, there will be more than 1 token.
+                //
+                assert(tokens.size() > 1);
+            
+                servername = tokens[0];
+                filename = tokens[2];
+                assert(strcmp(tokens[1].c_str(), CUSTOM_QUERY_FOLDER_NAME) == 0);
 
-        result = close(fd);
-        if (result == -1)
-        {
-            result = ReturnErrnoAndPrintError(__FUNCTION__, "close failed");
+                // Get the path to the custom query directory user specified.
+                //
+                serverInfo = GetServerInfo(servername);
+                if (serverInfo)
+                {
+                    userQueriesPath = serverInfo->m_customQueriesPath;
+
+                    // Construct the full path name to the query file
+                    //
+                    queryFilePath = StringFormat("%s/%s", userQueriesPath.c_str(), filename.c_str());
+                    
+                    fprintf(stderr, "Execute: %s\nResult: %s\n", queryFilePath.c_str(), fpath.c_str());
+
+                    // Execute the custom query and put the output to the output file
+                    // in the dump directory.
+                    //
+                    ExecuteCustomQuery(
+                        queryFilePath,
+                        fpath,
+                        serverInfo->m_hostname, 
+                        serverInfo->m_username,
+                        serverInfo->m_password);
+                }
+            }
+            else
+            {
+                error = GetDmvFileContent(path);
+            }
         }
     }
 
-    return result;
+    if (error && fd != -1)
+    {
+        close(fd);
+        fi->fh = -1;
+    }
+
+    fprintf(stderr, "%s FINISH with result %d\n", __FUNCTION__, error);
+    return error;
 }
 
 // ---------------------------------------------------------------------------
 // Method: ReadLocalImpl
 //
 // Description:
-//    This method redirects the read system call the dump directory.
+//    This method redirects the read system call to the dump directory.
 //
 // Returns:
 //    0 on success and -errno on error.
@@ -651,21 +798,14 @@ ReadLocalImpl(
     off_t offset,
     struct fuse_file_info* fi)
 {
-    int     fd;
-    string  fpath;
-    int     result = 0;
+    int fd = 0;
+    int result = -1;
 
-    (void)fi;
+    // Get file descriptor
+    //
+    GetFileDescriptorForPath(path, fi, fd);
 
-    fpath = CalculateDumpPath(path);
-
-    fd = open(fpath.c_str(), O_RDONLY);
-    if (fd == -1)
-    {
-        result = ReturnErrnoAndPrintError(__FUNCTION__, "open failed");
-    }
-
-    if (!result)
+    if (fd != -1)
     {
         result = pread(fd, buf, size, offset);
         if (result == -1)
@@ -673,7 +813,7 @@ ReadLocalImpl(
             result = ReturnErrnoAndPrintError(__FUNCTION__, "pread failed");
         }
 
-        close(fd);
+        CloseFileDesciptorIfOpened(path, fi, fd);
     }
 
     return result;
@@ -683,7 +823,7 @@ ReadLocalImpl(
 // Method: WriteLocalImpl
 //
 // Description:
-//    This method redirects the write system call the dump directory.
+//    This method redirects the write system call to the dump directory.
 //
 // Returns:
 //    0 on success and -errno on error.
@@ -696,11 +836,34 @@ WriteLocalImpl(
     off_t offset,
     struct fuse_file_info* fi)
 {
-    // Writing is not permitted
-    //
-    PrintMsg("Writing is not permitted for DMV files.\n");
+    int     fd;
+    string  fpath;
+    int     result = 0;
 
-    return -EPERM;
+    if (!IsDmvFile(path))
+    {
+        GetFileDescriptorForPath(path, fi, fd);
+
+        if (fd != -1)
+        {
+            result = pwrite(fd, buf, size, offset);
+            if (result == -1)
+            {
+                result = ReturnErrnoAndPrintError(__FUNCTION__, "pwrite failed");
+            }
+
+            CloseFileDesciptorIfOpened(path, fi, fd);
+        }
+    }
+    else
+    {
+        // It is not permitted to write to the DMV file.
+        //
+        PrintMsg("Cannot write to the DMV files.\n");
+        result = -EPERM;
+    }
+
+    return result;
 }
 
 // ---------------------------------------------------------------------------
@@ -736,11 +899,11 @@ StatfsLocalImpl(
 // Method: ReleaseLocalImpl
 //
 // Description:
-//    This method truncates an open DMV file back to size 0. This effectively 
-//    removes all the data that was fetced from the server on open().
+//    If the file is a DMV file - this method truncates an open DMV file 
+//    back to size 0. This effectively removes all the data that was 
+//    fetched from the server on open().
 //
-//    There is no need to close the file handle because it's being opened
-//    and closed on all previous relevant system calls.
+//    In all cases - close the file descriptor.
 //
 // Returns:
 //    0 on success and -errno on error.
@@ -750,17 +913,25 @@ ReleaseLocalImpl(
     const char* path,
     struct fuse_file_info* fi)
 {
-    int     result;
+    int result = 0;
 
-    (void)path;
+    if (IsDmvFile(path))
+    {
+        // Reset the DMV file.
+        //
+        result = TruncateLocalImpl(path, 0);
+        if (result == -1)
+        {
+            result = ReturnErrnoAndPrintError(__FUNCTION__,
+                                              "TruncateLocalImpl failed");
+        }
+    }
 
-    // This is where the DMV files get reset to 0.
-    //
-    result = TruncateLocalImpl(path, 0);
+    result = close(fi->fh);
     if (result == -1)
     {
-        result = ReturnErrnoAndPrintError(__FUNCTION__, 
-            "TruncateLocalImpl failed");
+        result = ReturnErrnoAndPrintError(__FUNCTION__,
+                                          "close failed");
     }
 
     return result;
@@ -793,7 +964,7 @@ FsyncLocalImpl(
 // Method: FallocateLocalImpl
 //
 // Description:
-//    This method redirects the fallocate system call the dump directory.
+//    This method redirects the fallocate system call to the dump directory.
 //
 // Returns:
 //    0 on success and -errno on error.
@@ -810,16 +981,9 @@ FallocateLocalImpl(
     string  fpath;
     int     result = 0;
 
-    (void)fi;
-    fpath = CalculateDumpPath(path);
+    GetFileDescriptorForPath(path, fi, fd);
 
-    fd = open(fpath.c_str(), O_RDONLY);
-    if (fd == -1)
-    {
-        result = ReturnErrnoAndPrintError(__FUNCTION__, "open failed");
-    }
-
-    if (!result)
+    if (fd != -1)
     {
         if (mode)
         {
@@ -830,7 +994,7 @@ FallocateLocalImpl(
             result = -posix_fallocate(fd, offset, length);
         }
 
-        close(fd);
+        CloseFileDesciptorIfOpened(path, fi, fd);
     }
 
     return result;
@@ -840,7 +1004,7 @@ FallocateLocalImpl(
 // Method: SetxattrLocalImpl
 //
 // Description:
-//    This method redirects the setxattr system call the dump directory.
+//    This method redirects the setxattr system call to the dump directory.
 //
 // Returns:
 //    0 on success and -errno on error.
@@ -871,7 +1035,7 @@ SetxattrLocalImpl(
 // Method: GetxattrLocalImpl
 //
 // Description:
-//    This method redirects the getxattr system call the dump directory.
+//    This method redirects the getxattr system call to the dump directory.
 //
 // Returns:
 //    0 on success and -errno on error.
@@ -901,7 +1065,7 @@ GetxattrLocalImpl(
 // Method: ListxattrLocalImpl
 //
 // Description:
-//    This method redirects the listxattr system call the dump directory.
+//    This method redirects the listxattr system call to the dump directory.
 //
 // Returns:
 //    0 on success and -errno on error.
@@ -930,7 +1094,7 @@ ListxattrLocalImpl(
 // Method: RemovexattrLocalImpl
 //
 // Description:
-//    This method redirects the removexattr system call the dump directory.
+//    This method redirects the removexattr system call to the dump directory.
 //
 // Returns:
 //    0 on success and -errno on error.
@@ -996,7 +1160,7 @@ InitializeSQLFs(
             entry->m_version);
     }
 
-    return NULL;
+    return nullptr;
 }
 
 // ---------------------------------------------------------------------------
@@ -1151,4 +1315,3 @@ StartFuse(
 
     return result;
 }
-

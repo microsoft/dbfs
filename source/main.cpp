@@ -32,6 +32,16 @@ bool g_UseLogFile;
 //
 bool g_RunInForeground;
 
+// Value of extended attribute that specifies is this is a DMV file
+// created by the tool.
+//
+// This will help decide if this is a DMV whose content
+// needs to be queried from the server.
+//
+// This will just be an empty attribute set.
+//
+char g_LocallyGeneratedFiles[] = "user.isCreatedByTool";
+
 // ---------------------------------------------------------------------------
 // Method: PrintUsageAndExit
 //
@@ -138,11 +148,13 @@ ParseArguments(
 
     status = false;
 
-    // Generate name of dump dir
+    // Generate name of dump directory.
+    //
     status = GenerateFileName(dumpDirPath);
     if (status)
     {
         // Default values
+        //
         g_UserPaths.m_dumpPath = "/tmp/" + dumpDirPath + "/";
 
         mountSet = false;
@@ -150,6 +162,7 @@ ParseArguments(
     }
 
     // Parsing
+    //
     while (status)
     {
         idx = 0;
@@ -157,7 +170,8 @@ ParseArguments(
 
         if (option == -1)
         {
-            // End of argument options
+            // End of argument options.
+            //
             break;
         }
 
@@ -223,6 +237,7 @@ ParseArguments(
     if (status)
     {
         // Mount path must be provided by the user.
+        //
         if (!mountSet)
         {
             fprintf(stderr, "###### Enter mount directory\n");
@@ -230,6 +245,7 @@ ParseArguments(
         }
 
         // Config file path must be provided by the user.
+        //
         if (!confSet)
         {
             fprintf(stderr, "###### Enter conf file path\n");
@@ -702,7 +718,8 @@ main(
     FILE* filePtr;
     bool status;
 
-    // Rejecting request if root is trying to run this
+    // Rejecting request if root is trying to run this.
+    //
     if ((getuid() == 0) || (geteuid() == 0))
     {
         fprintf(stderr, "DBFS should not be started with root privileges. "
@@ -716,10 +733,12 @@ main(
     {
         ParseArguments(argc, argv);
 
-        // Check if the set paths are valid
+        // Check if the set paths are valid.
+        //
         CheckAllSetPaths();
 
-        // Open the log-file path if given and in verbose mode
+        // Open the log-file path if given and in verbose mode.
+        //
         if (g_InVerbose && g_UseLogFile)
         {
             filePtr = fopen(g_UserPaths.m_logfilePath.c_str(), "w");

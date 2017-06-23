@@ -11,11 +11,6 @@
 
 #include "UtilsPrivate.h"
 
-extern struct SQLFsPaths g_UserPaths;
-extern bool g_InVerbose;
-extern unordered_map<string, class ServerInfo*> g_ServerInfoMap;
-extern bool g_UseLogFile;
-
 // ---------------------------------------------------------------------------
 // Method: CalculateDumpPath
 //
@@ -151,13 +146,13 @@ PrintMsg(const char* format, ...)
 //
 void
 GetServerDetails(
-    string servername,
-    string& hostname,
-    string& username,
-    string& password)
+string servername,
+string& hostname,
+string& username,
+string& password)
 {
     auto search = g_ServerInfoMap.find(servername);
-    
+
     if (search != g_ServerInfoMap.end())
     {
         hostname = search->second->m_hostname;
@@ -191,7 +186,7 @@ CreateFile(
     FILE*   fp;
 
     fp = fopen(path, "w+");
-    if (!fp) 
+    if (!fp)
     {
         PrintMsg("Error creating file %s %s\n", path, strerror(errno));
         KillSelf();
@@ -200,6 +195,61 @@ CreateFile(
     {
         fclose(fp);
     }
+
+    // Add the extended attribute indicating this is a locally created DMV
+    // file.
+    //
+    // Keep size as 0 as we do not want to store a value for the attribute
+    // - just want to create the attribute so pass in size as 0.
+    //
+    int status = setxattr(path,
+                          g_LocallyGeneratedFiles, // name
+                          "1",  // value
+                          0,    // size
+                          0);   // default value.
+    if (status)
+    {
+        PrintMsg("Error setting extended attributes for file %s : %s\n", path, strerror(errno));
+        KillSelf();
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Method: IsDmvFile
+//
+// Description:
+//  This checks if the file pointed to by the provided path is a
+//  DMV file (created by the tool).
+//
+// Returns:
+//    true if file is a dmv - otherwise false.
+//
+bool
+IsDmvFile(
+    const char* path)
+{
+    string fpath;
+    bool result = false;
+
+    fpath = CalculateDumpPath(path);
+
+    // Check if this is a DMV file by checking for the
+    // custom attribute.
+    //
+    int length = getxattr(fpath.c_str(),
+                          g_LocallyGeneratedFiles,
+                          NULL,
+                          0);
+
+    // We expect the length to be 0.
+    // -1 would mean that the value doesn't exist.
+    //
+    if (length >= 0)
+    {
+        result = true;
+    }
+
+    return result;
 }
 
 // ---------------------------------------------------------------------------
@@ -253,7 +303,7 @@ CreateDMVFiles(
         // schema_id = 4 selects DMV's (leaves out INFORMATION_SCHEMA).
         //
         dmvQuery = "SELECT name from sys.system_views where schema_id = 4";
-        result = ExecuteQuery(dmvQuery.c_str(), responseString, hostname,
+        result = ExecuteQuery(dmvQuery, responseString, hostname,
             username, password, TYPE_TSV);
         if (result)
         {

@@ -32,12 +32,12 @@ enum FileFormat
 // This method executes the provided SQL query on the given server.
 //
 int ExecuteQuery(
-    string query,
+    const string& query,
     string& output,
-    string dbServer,
-    string username,
-    string password,
-    enum FileFormat type);
+    const string& dbServer,
+    const string& username,
+    const string& password,
+    const FileFormat type);
 
 // This method checks if DB-Lib is able to connect with the given 
 // credentials of the given IP address.

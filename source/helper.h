@@ -58,6 +58,13 @@ void
 CreateFile(
     const char* path);
 
+// This checks if the file pointed to by the provided path is a
+// DMV file (created by the tool).
+//
+bool
+IsDmvFile(
+    const char* path);
+
 // This method creates the empty DMV files for a given server.
 // The virtual location of the files (as seen) is <MOUNT DIR>/<SERVER NAME>/.
 //

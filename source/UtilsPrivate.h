@@ -138,6 +138,7 @@ using std::cin;
 #include <sybdb.h>
 #include <syberror.h>
 #include <termios.h>
+#include <cstddef>
 
 // ---------------------------------------------------------------------------
 // Local headers of utility files
@@ -148,5 +149,14 @@ using std::cin;
 #include "helper.h"
 #include "INIFile.h"
 #include "ParseException.h"
+
+// Common symbols needed by all files.
+//
+extern struct SQLFsPaths g_UserPaths;
+extern bool g_InVerbose;
+extern unordered_map<string, class ServerInfo*> g_ServerInfoMap;
+extern bool g_UseLogFile;
+extern bool g_RunInForeground;
+extern char g_LocallyGeneratedFiles[];
 
 #endif
