@@ -8,9 +8,7 @@
 //   This file contains the backend function definitions used to query
 //   the SQL server.
 //
-
 #include "UtilsPrivate.h"
-
 
 // ---------------------------------------------------------------------------
 // Method: DBErrorHandler
@@ -89,10 +87,10 @@ void UninstallDBHandlers()
 //
 static RETCODE
 CreateConnectionAndRunQuery(
-    string query,
-    string dbServer,
-    string username,
-    string password,
+    const string& query,
+    const string& dbServer,
+    const string& username,
+    const string& password,
     DBPROCESS*& dbConn)
 {
     LOGINREC*   login;
@@ -356,12 +354,12 @@ static void
 //
 int
 ExecuteQuery(
-    string query,
+    const string& query,
     string& output,
-    string dbServer,
-    string username,
-    string password,
-    enum FileFormat type)
+    const string& dbServer,
+    const string& username,
+    const string& password,
+    const FileFormat type)
 {
     DBPROCESS*      dbConn;
     RETCODE         status = FAIL;
