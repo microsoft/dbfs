@@ -31,6 +31,7 @@ public:
     string m_hostname;
     string m_username;
     string m_password;
+    string m_customQueriesPath;
     int m_version;
 };
 
