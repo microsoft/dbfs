@@ -1244,9 +1244,9 @@ InitializeFuseOperations(
     sqlFsOperations->getxattr = GetxattrLocalImpl;
     sqlFsOperations->listxattr = ListxattrLocalImpl;
     sqlFsOperations->removexattr = RemovexattrLocalImpl;
-    sqlFsOperations->opendir = NULL;
+    sqlFsOperations->opendir = OpendirLocalImpl;
     sqlFsOperations->readdir = ReaddirLocalImpl;
-    sqlFsOperations->releasedir = NULL;
+    sqlFsOperations->releasedir = ReleasedirLocalImpl;
     sqlFsOperations->fsyncdir = NULL;
     sqlFsOperations->init = InitializeSQLFs;
     sqlFsOperations->destroy = DestroySQLFs;
@@ -1331,8 +1331,8 @@ StartFuse(
     assert(buffer);
     argv[argc++] = buffer;
 
-    std::thread t(CheckForCustomQueries);
-    t.detach();
+    //std::thread t(CheckForCustomQueries);
+    //t.detach();
 
     PrintMsg("Starting fuse\n");
 
