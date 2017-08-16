@@ -18,3 +18,6 @@ $(TARGET): $(OBJECTS)
 clean:
 	$(AT)rm -rf *.o
 	$(AT)rm -rf $(TARGET)
+
+debug: CFLAGS += -g
+debug: all
