@@ -26,12 +26,20 @@ struct SQLFsPaths
 //
 class ServerInfo 
 {
-
 public:
     string m_hostname;
     string m_username;
     string m_password;
+
+    // This is a canonicalized path to user custom queries directory
+    // that was specified in the config file.
+    //
     string m_customQueriesPath;
+
+    // Sql server version. The version number is used to determine
+    // if JSON output is supported. Value for SQL Server 2016 is [16].
+    // [16] is the minimum version required for JSON output.
+    //
     int m_version;
 };
 

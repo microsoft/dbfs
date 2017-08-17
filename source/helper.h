@@ -55,10 +55,10 @@ CreateFile(
     const char* path);
 
 // This checks if the file pointed to by the provided path is a
-// DMV file (created by the tool).
+// dbfs file (created by this tool).
 //
 bool
-IsDmvFile(
+IsDbfsFile(
     const char* path);
 
 // This method creates the empty DMV files for a given server.
@@ -77,3 +77,13 @@ CreateDMVFiles(
 //
 void
 KillSelf();
+
+// Given a server name, get ServerInfo.
+//
+ServerInfo* GetServerInfo(
+    const string& servername);
+
+// Given a server name, get the user specified custom query directory.
+//
+string GetUserCustomQueryPath(
+    const string& servername);

@@ -543,7 +543,7 @@ ParseConfigFile(void)
     string          username;
     string          password;    
     string          version;
-    string          customQueryPath;
+    string          customQueriesPath;
     int             versionInt;
     int             itrNum = 0;
     map<std::string, SectionNameValuePair>::iterator sectionItr;
@@ -590,13 +590,13 @@ ParseConfigFile(void)
             }
             if (status)
             {
-                status = ParseSectionEntry(sectionItr, "customQueryPath", customQueryPath);
+                status = ParseSectionEntry(sectionItr, "customQueriesPath", customQueriesPath);
                 if (status)
                 {
-                    char* tempPtr = realpath(customQueryPath.c_str(), NULL);
+                    char* tempPtr = realpath(customQueriesPath.c_str(), NULL);
                     if (tempPtr)
                     {
-                        customQueryPath = tempPtr;
+                        customQueriesPath = tempPtr;
                         free(tempPtr);
                     }
                     else
@@ -643,7 +643,7 @@ ParseConfigFile(void)
                 serverInfoEntry->m_username = username;
                 serverInfoEntry->m_password = password;
                 serverInfoEntry->m_version = versionInt;
-                serverInfoEntry->m_customQueriesPath = customQueryPath;
+                serverInfoEntry->m_customQueriesPath = customQueriesPath;
             }
             else
             {
