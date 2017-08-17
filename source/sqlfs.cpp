@@ -119,6 +119,134 @@ ReadlinkLocalImpl(
 //    0 on success and -errno on error.
 //
 static int
+OpendirLocalImpl(
+    const char* path,
+    struct fuse_file_info* fi)
+{
+    fprintf(stderr, "%s START\n", __FUNCTION__);
+    int             failed = 0;
+    DIR*            dp;
+    struct dirent*  de;
+    string          fpath;
+    vector<string>  tokens;
+    string          servername;
+    string          customQueriesPath;
+    DIR*            customQueriesDir;
+    string          filepath;
+    
+    fpath = CalculateDumpPath(path);
+    fprintf(stderr, "\tOriginal path = %s\n\tConverted path =%s\n", path, fpath.c_str());
+    dp = opendir(fpath.c_str());
+    if (dp != NULL)
+    {
+        // Save file handle for use in readdir and releasedir
+        //
+        fi->fh = (uint64_t)(dp);
+
+        // If this is a custom query dir, populate dump path with custom query 
+        // output files so that readdir can list the files
+        //
+        if (strstr(path, CUSTOM_QUERY_FOLDER_NAME))
+        {
+            // Remove old files from custom query dump directory
+            //
+            while ((de = readdir(dp)) != NULL)
+            {
+                if (de->d_type == DT_REG)
+                {
+                    filepath = StringFormat("%s/%s", fpath.c_str(), de->d_name);
+
+                    // Do the best to remove the file
+                    //
+                    (void) remove(filepath.c_str());
+
+                    fprintf(stderr, "Remove %s\n", filepath.c_str());
+                }
+            }
+
+            // Need to rewind the directory point to the begining for readdir
+            //
+            rewinddir(dp);
+
+            // Extract SQL server name, DMV name and type
+            // Tokenising the path.
+            //
+            tokens = Split(path, '/');
+        
+            // path is of the form <servername>/<filename>
+            // On success, there will be more than 1 token.
+            //
+            assert(tokens.size() > 1);
+        
+            servername = tokens[0];
+
+            assert(strcmp(tokens[1].c_str(), CUSTOM_QUERY_FOLDER_NAME) == 0);
+
+            // Lookup the server name in the map
+            //
+            auto server = g_ServerInfoMap.find(servername);
+            if (server != g_ServerInfoMap.end())
+            {
+                ServerInfo* serverInfo = server->second;
+                customQueriesPath = serverInfo->m_customQueriesPath;
+
+                char* absCustomQuriesPath = realpath(customQueriesPath.c_str(), NULL);
+                if (absCustomQuriesPath)
+                {
+                    // Open customQueries dir 
+                    //
+                    customQueriesDir = opendir(absCustomQuriesPath);
+                    if (customQueriesDir != NULL)
+                    {
+                        // Read all files in customQueries dir
+                        //
+                        while((de = readdir(customQueriesDir)) != NULL)
+                        {
+                            if (de->d_type == DT_REG)
+                            {
+                                // Create new files with the same name in
+                                // the dump directory for storing results
+                                //
+                                filepath = StringFormat("%s/%s", fpath.c_str(), de->d_name);
+                                CreateFile(filepath.c_str());
+
+                                if (serverInfo->m_version >= 16)
+                                {
+                                    // Creating the json file.
+                                    //
+                                    filepath = StringFormat("%s.json", filepath.c_str());
+                                    CreateFile(filepath.c_str());
+                                }
+                            }
+                        }
+                        closedir(customQueriesDir);
+                    }
+
+                    free(absCustomQuriesPath);
+                }
+            }
+        }
+    }
+    else
+    {
+        failed = ReturnErrnoAndPrintError(__FUNCTION__, "opendir failed");
+        fi->fh = 0;
+    }
+
+    fprintf(stderr, "%s FINISH with result %d\n", __FUNCTION__, failed);
+    return failed;
+}
+
+// ---------------------------------------------------------------------------
+// Method: ReaddirLocalImpl
+//
+// Description:
+//    This method redirects the readdir system call to the dump directory.
+//
+// Returns:
+//    0 on success and -errno on error.
+//
+static int
 ReaddirLocalImpl(
     const char* path,
     void* buf,
@@ -135,9 +263,8 @@ ReaddirLocalImpl(
 
     (void)offset;
     (void)fi;
-    fpath = CalculateDumpPath(path);
-    fprintf(stderr, "\tOriginal path = %s\n\tConverted path =%s\n", path, fpath.c_str());
-    dp = opendir(fpath.c_str());
+
+    dp = (DIR*)fi->fh;
     if (dp == NULL)
     {
         result = ReturnErrnoAndPrintError(__FUNCTION__, "opendir failed");
@@ -153,11 +280,41 @@ ReaddirLocalImpl(
             if (filler(buf, de->d_name, &st, 0))
                 break;
         }
-
-        closedir(dp);
     }
     fprintf(stderr, "%s FINISH with result %d\n", __FUNCTION__, result);
     return result;
+}
+
+// ---------------------------------------------------------------------------
+// Method: ReleasedirLocalImpl
+//
+// Description:
+//    This method redirects the readdir system call to the dump directory.
+//
+// Returns:
+//    0 on success and -errno on error.
+//
+static int
+ReleasedirLocalImpl(
+    const char* path,
+    struct fuse_file_info* fi)
+{
+    fprintf(stderr, "%s START\n", __FUNCTION__);
+    int             failed = 0;
+    DIR*            dp;
+
+    dp = (DIR*)fi->fh;
+    if (dp != NULL)
+    {
+        closedir(dp);
+    }
+    else
+    {
+        failed = ReturnErrnoAndPrintError(__FUNCTION__, "opendir failed");
+    }
+
+    fprintf(stderr, "%s FINISH with result %d\n", __FUNCTION__, failed);
+    return failed;
 }
 
 // ---------------------------------------------------------------------------
