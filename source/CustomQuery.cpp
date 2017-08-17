@@ -38,7 +38,6 @@ ExecuteCustomQuery(
     ifstream ifs(queryFilePath);
     string query((std::istreambuf_iterator<char>(ifs)),
                         (std::istreambuf_iterator<char>()));
-    PrintMsg("***** Query read = %s\n", query.c_str());
     // Execute the query.
     //
     // We want the column names as well so use type as TYPE_TSV.
@@ -87,7 +86,8 @@ ExecuteCustomQuery(
 // Returns:
 //    none.
 //
-void RemoveCustomQueriesOutputFiles(
+void 
+RemoveCustomQueriesOutputFiles(
     DIR* dp,
     const string& dumpPath)
 {
@@ -105,8 +105,6 @@ void RemoveCustomQueriesOutputFiles(
             // Do the best to remove the file
             //
             (void) remove(filepath.c_str());
-
-            fprintf(stderr, "Remove %s\n", filepath.c_str());
         }
     }
 }
@@ -122,7 +120,8 @@ void RemoveCustomQueriesOutputFiles(
 // Returns:
 //    none.
 //
-void CreateCustomQueriesOutputFiles(
+void 
+CreateCustomQueriesOutputFiles(
     const string& servername,
     const string& dumpPath)
 {

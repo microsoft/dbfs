@@ -14,17 +14,24 @@
 //
 #define CUSTOM_QUERY_FOLDER_NAME                    "customQueries"
 
-// Once query is processed -rename original file to end with
-// this phrase.
+// Execute a user custom query
 //
-#define CUSTOM_QUERY_OUTPUT_FILE_NAME_TERMINATION   "_output"
+void
+ExecuteCustomQuery(
+    const string& queryFilePath,
+    const string& queryResultPath,
+    const string& hostname,
+    const string& username,
+    const string& password);
 
-// Time the thread should sleep before checking in the folders again.
+// Remove all the output files in custom query dump directory.
 //
-#define CUSTOM_QUERY_THREAD_SLEEP_TIME_SECONDS      2
+void RemoveCustomQueriesOutputFiles(
+    DIR* dp,
+    const string& dumpPath);
 
-
-// This method is the function that the custom query thread starts
-// with and helps implement the custom query support.
+// Create output files in custom query dump directory.
 //
-void CheckForCustomQueries();
+void CreateCustomQueriesOutputFiles(
+    const string& servername,
+    const string& dumpPath);

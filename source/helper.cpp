@@ -146,10 +146,10 @@ PrintMsg(const char* format, ...)
 //
 void
 GetServerDetails(
-string servername,
-string& hostname,
-string& username,
-string& password)
+    string servername,
+    string& hostname,
+    string& username,
+    string& password)
 {
     auto search = g_ServerInfoMap.find(servername);
 
@@ -215,17 +215,17 @@ CreateFile(
 }
 
 // ---------------------------------------------------------------------------
-// Method: IsDmvFile
+// Method: IsDbfsFile
 //
 // Description:
 //  This checks if the file pointed to by the provided path is a
-//  DMV file (created by the tool).
+//  dbfs file (created by this tool).
 //
 // Returns:
 //    true if file is a dmv - otherwise false.
 //
 bool
-IsDmvFile(
+IsDbfsFile(
     const char* path)
 {
     string fpath;
@@ -388,3 +388,52 @@ KillSelf()
     kill(getpid(), SIGHUP);
 }
 
+// ---------------------------------------------------------------------------
+// Method: GetServerInfo
+//
+// Description:
+//    Given a server name, look up ServerInfo from ServerInfoMap.
+//    The map was created by parsing the config file.
+//
+// Returns:
+//    Pointer to ServerInfo object or NULL if the server does not exist
+//
+ServerInfo* GetServerInfo(
+    const string& servername)
+{
+    ServerInfo* serverInfo = NULL;
+
+    // Lookup the server name in the map
+    //
+    auto server = g_ServerInfoMap.find(servername);
+    if (server != g_ServerInfoMap.end())
+    {
+        serverInfo = server->second;
+    }
+
+    return serverInfo;
+}
+
+// ---------------------------------------------------------------------------
+// Method: GetUserCustomQueryPath
+//
+// Description:
+//    Given a server name, get a customer query path that was specified by
+//    the user in config file.
+//
+// Returns:
+//    - Empty string if the server does not exist.
+//    - Canonical path to custom query directory that user specify in config
+//      file for that specific servername.
+//
+string GetUserCustomQueryPath(
+    const string& servername)
+{
+    string customQueryPath;
+    ServerInfo* serverInfo = GetServerInfo(servername);
+    if (serverInfo)
+    {
+        customQueryPath = serverInfo->m_customQueriesPath;
+    }
+    return customQueryPath;
+}

@@ -27,12 +27,10 @@ GetattrLocalImpl(
     const char* path,
     struct stat* stbuf)
 {
-    fprintf(stderr, "%s START\n", __FUNCTION__);
     int     result;
     string  fpath;
 
     fpath = CalculateDumpPath(path);
-    fprintf(stderr, "\tOriginal path = %s\n\tConverted path =%s\n", path, fpath.c_str());
     result = lstat(fpath.c_str(), stbuf);
     if (result == -1)
     {
@@ -42,7 +40,6 @@ GetattrLocalImpl(
         result = -errno;
     }
 
-    fprintf(stderr, "%s FINISH with result %d\n", __FUNCTION__, result);
     return result;
 }
 
@@ -60,18 +57,15 @@ AccessLocalImpl(
     const char* path,
     int mask)
 {
-    fprintf(stderr, "%s START\n", __FUNCTION__);
     int     result;
     string  fpath;
 
     fpath = CalculateDumpPath(path);
-    fprintf(stderr, "\tOriginal path = %s\n\tConverted path =%s\n", path, fpath.c_str());
     result = access(fpath.c_str(), mask);
     if (result == -1)
     {
         result = ReturnErrnoAndPrintError(__FUNCTION__, "access failed");
     }
-    fprintf(stderr, "%s FINISH with result %d\n", __FUNCTION__, result);
     return result;
 }
 
@@ -90,12 +84,10 @@ ReadlinkLocalImpl(
     char* buf,
     size_t size)
 {
-    fprintf(stderr, "%s START\n", __FUNCTION__);
     int     result;
     string  fpath;
 
     fpath = CalculateDumpPath(path);
-    fprintf(stderr, "\tOriginal path = %s\n\tConverted path =%s\n", path, fpath.c_str());
     result = readlink(fpath.c_str(), buf, size - 1);
     if (result == -1)
     {
@@ -105,7 +97,6 @@ ReadlinkLocalImpl(
     {
         buf[result] = '\0';
     }
-    fprintf(stderr, "%s FINISH with result %d\n", __FUNCTION__, result);
     return result;
 }
 
@@ -113,7 +104,13 @@ ReadlinkLocalImpl(
 // Method: ReaddirLocalImpl
 //
 // Description:
-//    This method redirects the readdir system call to the dump directory.
+//    This method redirects the opendir system call to the dump directory.
+//    If this is opening a custom query directory, it will 
+//    1. Delete all the previous files in custom query dump directory. 
+//       To ensure that if there is a query file is removed or added, 
+//       it will be reflected properly.
+//    2. Iterate the user custom query directory and create output files
+//       with the same name as the query file at custom query dump directory. 
 //
 // Returns:
 //    0 on success and -errno on error.
@@ -123,19 +120,15 @@ OpendirLocalImpl(
     const char* path,
     struct fuse_file_info* fi)
 {
-    fprintf(stderr, "%s START\n", __FUNCTION__);
     int             failed = 0;
     DIR*            dp;
-    struct dirent*  de;
     string          fpath;
     vector<string>  tokens;
     string          servername;
-    string          customQueriesPath;
-    DIR*            customQueriesDir;
+    string          userQueriesPath;
     string          filepath;
     
     fpath = CalculateDumpPath(path);
-    fprintf(stderr, "\tOriginal path = %s\n\tConverted path =%s\n", path, fpath.c_str());
     dp = opendir(fpath.c_str());
     if (dp != NULL)
     {
@@ -144,87 +137,29 @@ OpendirLocalImpl(
         fi->fh = (uint64_t)(dp);
 
         // If this is a custom query dir, populate dump path with custom query 
-        // output files so that readdir can list the files
+        // output files so that readdir can list the files.
         //
         if (strstr(path, CUSTOM_QUERY_FOLDER_NAME))
         {
-            // Remove old files from custom query dump directory
-            //
-            while ((de = readdir(dp)) != NULL)
-            {
-                if (de->d_type == DT_REG)
-                {
-                    filepath = StringFormat("%s/%s", fpath.c_str(), de->d_name);
+            RemoveCustomQueriesOutputFiles(dp, fpath);            
 
-                    // Do the best to remove the file
-                    //
-                    (void) remove(filepath.c_str());
-
-                    fprintf(stderr, "Remove %s\n", filepath.c_str());
-                }
-            }
-
-            // Need to rewind the directory point to the begining for readdir
+            // Need to rewind the directory point to the begining for readdir.
             //
             rewinddir(dp);
 
-            // Extract SQL server name, DMV name and type
             // Tokenising the path.
             //
             tokens = Split(path, '/');
         
-            // path is of the form <servername>/<filename>
+            // Path is of the form <servername>/<filename>
             // On success, there will be more than 1 token.
             //
             assert(tokens.size() > 1);
         
             servername = tokens[0];
-
             assert(strcmp(tokens[1].c_str(), CUSTOM_QUERY_FOLDER_NAME) == 0);
 
-            // Lookup the server name in the map
-            //
-            auto server = g_ServerInfoMap.find(servername);
-            if (server != g_ServerInfoMap.end())
-            {
-                ServerInfo* serverInfo = server->second;
-                customQueriesPath = serverInfo->m_customQueriesPath;
-
-                char* absCustomQuriesPath = realpath(customQueriesPath.c_str(), NULL);
-                if (absCustomQuriesPath)
-                {
-                    // Open customQueries dir 
-                    //
-                    customQueriesDir = opendir(absCustomQuriesPath);
-                    if (customQueriesDir != NULL)
-                    {
-                        // Read all files in customQueries dir
-                        //
-                        while((de = readdir(customQueriesDir)) != NULL)
-                        {
-                            if (de->d_type == DT_REG)
-                            {
-                                // Create new files with the same name in
-                                // the dump directory for storing results
-                                //
-                                filepath = StringFormat("%s/%s", fpath.c_str(), de->d_name);
-                                CreateFile(filepath.c_str());
-
-                                if (serverInfo->m_version >= 16)
-                                {
-                                    // Creating the json file.
-                                    //
-                                    filepath = StringFormat("%s.json", filepath.c_str());
-                                    CreateFile(filepath.c_str());
-                                }
-                            }
-                        }
-                        closedir(customQueriesDir);
-                    }
-
-                    free(absCustomQuriesPath);
-                }
-            }
+            CreateCustomQueriesOutputFiles(servername, fpath);            
         }
     }
     else
@@ -233,7 +168,6 @@ OpendirLocalImpl(
         fi->fh = 0;
     }
 
-    fprintf(stderr, "%s FINISH with result %d\n", __FUNCTION__, failed);
     return failed;
 }
 
@@ -254,7 +188,6 @@ ReaddirLocalImpl(
     off_t offset,
     struct fuse_file_info* fi)
 {
-    fprintf(stderr, "%s START\n", __FUNCTION__);
     DIR*            dp;
     struct dirent*  de;
     string          fpath;
@@ -281,7 +214,6 @@ ReaddirLocalImpl(
                 break;
         }
     }
-    fprintf(stderr, "%s FINISH with result %d\n", __FUNCTION__, result);
     return result;
 }
 
@@ -299,22 +231,16 @@ ReleasedirLocalImpl(
     const char* path,
     struct fuse_file_info* fi)
 {
-    fprintf(stderr, "%s START\n", __FUNCTION__);
-    int             failed = 0;
+    int             error = 0;
     DIR*            dp;
 
     dp = (DIR*)fi->fh;
     if (dp != NULL)
     {
-        closedir(dp);
-    }
-    else
-    {
-        failed = ReturnErrnoAndPrintError(__FUNCTION__, "opendir failed");
+        error = closedir(dp);
     }
 
-    fprintf(stderr, "%s FINISH with result %d\n", __FUNCTION__, failed);
-    return failed;
+    return error;
 }
 
 // ---------------------------------------------------------------------------
@@ -332,12 +258,10 @@ MknodLocalImpl(
     mode_t mode,
     dev_t rdev)
 {
-    fprintf(stderr, "%s START\n", __FUNCTION__);
     int     result;
     string  fpath;
 
     fpath = CalculateDumpPath(path);
-    fprintf(stderr, "\tOriginal path = %s\n\tConverted path =%s\n", path, fpath.c_str());
     if (S_ISREG(mode))
     {
         result = open(fpath.c_str(), O_CREAT | O_EXCL | O_WRONLY, mode);
@@ -370,7 +294,6 @@ MknodLocalImpl(
             result = ReturnErrnoAndPrintError(__FUNCTION__, "mknod failed");
         }
     }
-    fprintf(stderr, "%s FINISH with result %d\n", __FUNCTION__, result);
     return result;
 }
 
@@ -388,18 +311,15 @@ MkdirLocalImpl(
     const char* path,
     mode_t mode)
 {
-    fprintf(stderr, "%s START\n", __FUNCTION__);
     int     result;
     string  fpath;
 
     fpath = CalculateDumpPath(path);
-    fprintf(stderr, "\tOriginal path = %s\n\tConverted path =%s\n", path, fpath.c_str());
     result = mkdir(fpath.c_str(), mode);
     if (result == -1)
     {
         result = ReturnErrnoAndPrintError(__FUNCTION__, "mkdir failed");
     }
-    fprintf(stderr, "%s FINISH with result %d\n", __FUNCTION__, result);
     return result;
 }
 
@@ -416,18 +336,15 @@ static int
 UnlinkLocalImpl(
     const char* path)
 {
-    fprintf(stderr, "%s START\n", __FUNCTION__);
     int     result;
     string  fpath;
 
     fpath = CalculateDumpPath(path);
-    fprintf(stderr, "\tOriginal path = %s\n\tConverted path =%s\n", path, fpath.c_str());
     result = unlink(fpath.c_str());
     if (result == -1)
     {
         result = ReturnErrnoAndPrintError(__FUNCTION__, "unlink failed");
     }
-    fprintf(stderr, "%s FINISH with result %d\n", __FUNCTION__, result);
     return result;
 }
 
@@ -444,18 +361,15 @@ static int
 RmdirLocalImpl(
     const char* path)
 {
-    fprintf(stderr, "%s START\n", __FUNCTION__);
     int     result;
     string  fpath;
 
     fpath = CalculateDumpPath(path);
-    fprintf(stderr, "\tOriginal path = %s\n\tConverted path =%s\n", path, fpath.c_str());
     result = rmdir(fpath.c_str());
     if (result == -1)
     {
         result = ReturnErrnoAndPrintError(__FUNCTION__, "rmdir failed");
     }
-    fprintf(stderr, "%s FINISH with result %d\n", __FUNCTION__, result);
     return result;
 }
 
@@ -473,21 +387,17 @@ SymlinkLocalImpl(
     const char* from,
     const char* to)
 {
-    fprintf(stderr, "%s START\n", __FUNCTION__);
     int     result;
     string  fpath;
     string  tpath;
 
     fpath = CalculateDumpPath(from);
     tpath = CalculateDumpPath(to);
-    fprintf(stderr, "\tFROM Original path = %s\n\tFROM Converted path =%s\n", from, fpath.c_str());
-    fprintf(stderr, "\tTO Original path = %s\n\tTO converted path =%s\n", to, tpath.c_str());
     result = symlink(fpath.c_str(), tpath.c_str());
     if (result == -1)
     {
         result = ReturnErrnoAndPrintError(__FUNCTION__, "symlink failed");
     }
-    fprintf(stderr, "%s FINISH with result %d\n", __FUNCTION__, result);
     return result;
 }
 
@@ -505,21 +415,17 @@ RenameLocalImpl(
     const char* from,
     const char* to)
 {
-    fprintf(stderr, "%s START\n", __FUNCTION__);
     int     result;
     string  fpath;
     string  tpath;
 
     fpath = CalculateDumpPath(from);
     tpath = CalculateDumpPath(to);
-    fprintf(stderr, "\tFROM Original path = %s\n\tFROM Converted path =%s\n", from, fpath.c_str());
-    fprintf(stderr, "\tTO Original path = %s\n\tTO converted path =%s\n", to, tpath.c_str());
     result = rename(fpath.c_str(), tpath.c_str());
     if (result == -1)
     {
         result = ReturnErrnoAndPrintError(__FUNCTION__, "rename failed");
     }
-    fprintf(stderr, "%s FINISH with result %d\n", __FUNCTION__, result);
     return result;
 }
 
@@ -537,21 +443,17 @@ LinkLocalImpl(
     const char* from,
     const char* to)
 {
-    fprintf(stderr, "%s START\n", __FUNCTION__);
     int     result;
     string  fpath;
     string  tpath;
 
     fpath = CalculateDumpPath(from);
     tpath = CalculateDumpPath(to);
-    fprintf(stderr, "\tFROM Original path = %s\n\tFROM Converted path =%s\n", from, fpath.c_str());
-    fprintf(stderr, "\tTO Original path = %s\n\tTO converted path =%s\n", to, tpath.c_str());
     result = link(fpath.c_str(), tpath.c_str());
     if (result == -1)
     {
         result = ReturnErrnoAndPrintError(__FUNCTION__, "link failed");
     }
-    fprintf(stderr, "%s FINISH with result %d\n", __FUNCTION__, result);
     return result;
 }
 
@@ -569,18 +471,15 @@ ChmodLocalImpl(
     const char* path,
     mode_t mode)
 {
-    fprintf(stderr, "%s START\n", __FUNCTION__);
     int     result;
     string  fpath;
 
     fpath = CalculateDumpPath(path);
-    fprintf(stderr, "\tOriginal path = %s\n\tConverted path =%s\n", path, fpath.c_str());
     result = chmod(fpath.c_str(), mode);
     if (result == -1)
     {
         result = ReturnErrnoAndPrintError(__FUNCTION__, "chmod failed");
     }
-    fprintf(stderr, "%s FINISH with result %d\n", __FUNCTION__, result);
     return result;
 }
 
@@ -599,18 +498,15 @@ ChownLocalImpl(
     uid_t username,
     gid_t gid)
 {
-    fprintf(stderr, "%s START\n", __FUNCTION__);
     int     result;
     string  fpath;
 
     fpath = CalculateDumpPath(path);
-    fprintf(stderr, "\tOriginal path = %s\n\tConverted path =%s\n", path, fpath.c_str());
     result = lchown(fpath.c_str(), username, gid);
     if (result == -1)
     {
         result = ReturnErrnoAndPrintError(__FUNCTION__, "lchown failed");
     }
-    fprintf(stderr, "%s FINISH with result %d\n", __FUNCTION__, result);
     return result;
 }
 
@@ -628,18 +524,15 @@ TruncateLocalImpl(
     const char* path,
     off_t size)
 {
-    fprintf(stderr, "%s START\n", __FUNCTION__);
     int     result;
     string  fpath;
 
     fpath = CalculateDumpPath(path);
-    fprintf(stderr, "\tOriginal path = %s\n\tConverted path =%s\n", path, fpath.c_str());
     result = truncate(fpath.c_str(), size);
     if (result == -1)
     {
         result = ReturnErrnoAndPrintError(__FUNCTION__, "truncate failed");
     }
-    fprintf(stderr, "%s FINISH with result %d\n", __FUNCTION__, result);
     return result;
 }
 
@@ -657,12 +550,10 @@ UtimensLocalImpl(
     const char* path,
     const struct timespec ts[2])
 {
-    fprintf(stderr, "%s START\n", __FUNCTION__);
     int     result;
     string  fpath;
 
     fpath = CalculateDumpPath(path);
-    fprintf(stderr, "\tOriginal path = %s\n\tConverted path =%s\n", path, fpath.c_str());
     // Not using utime/utimes since they follow symlinks.
     //
     result = utimensat(0, fpath.c_str(), ts, AT_SYMLINK_NOFOLLOW);
@@ -670,7 +561,6 @@ UtimensLocalImpl(
     {
         result = ReturnErrnoAndPrintError(__FUNCTION__, "utimensat failed");
     }
-    fprintf(stderr, "%s FINISH with result %d\n", __FUNCTION__, result);
     return result;
 }
 
@@ -697,7 +587,6 @@ GetFileDescriptorForPath(
     if (!fi)
     {
         fpath = CalculateDumpPath(path);
-        fprintf(stderr, "\tOriginal path = %s\n\tConverted path =%s\n", path, fpath.c_str());
         // Open the file.
         //
         fd = open(fpath.c_str(), fi->flags);
@@ -705,12 +594,10 @@ GetFileDescriptorForPath(
         {
             ReturnErrnoAndPrintError(__FUNCTION__, "open failed");
         }
-        fprintf(stderr, "\t** Opened new FD = %d\n", fd);
     }
     else
     {
         fd = fi->fh;
-        fprintf(stderr, "\t** Using old fd = %d\n", fd);
     }
 }
 
@@ -732,7 +619,6 @@ CloseFileDesciptorIfOpened(
 {
     if (!fi)
     {
-        fprintf(stderr, "\t** Closing FD = %d in %s\n", fd, __FUNCTION__);
         int result = close(fd);
         if (result)
         {
@@ -741,7 +627,8 @@ CloseFileDesciptorIfOpened(
     }
 }
 
-// Method: OpenDmvFile
+// ---------------------------------------------------------------------------
+// Method: GetDmvFileContent
 //
 // Description:
 //    This function is responsible for filling the file(DMV) being opened 
@@ -763,7 +650,6 @@ static int
 GetDmvFileContent(
     string path)
 {
-    fprintf(stderr, "%s START\n", __FUNCTION__);
     int                 error = 0;
     vector<string>      tokens;
     string              filename;
@@ -851,7 +737,6 @@ GetDmvFileContent(
         error = ReturnErrnoAndPrintError(__FUNCTION__, "open failed");
     }
 
-    fprintf(stderr, "%s FINISH with result %d\n", __FUNCTION__, error);
 
     return error;
 }
@@ -864,6 +749,8 @@ GetDmvFileContent(
 //    1. It will redirect the open system call to the dump directory and save
 //       file description in the fuse_file_info pointer passed in.
 //    2. If this is a DMV - it will also query the server for the content.
+//    3. If this is a custom query file, it will run the query and save
+//       the result to the output file in the dump directory
 //
 // Returns:
 //    0 on success, 
@@ -875,13 +762,17 @@ OpenLocalImpl(
     const char* path,
     struct fuse_file_info* fi)
 {
-    fprintf(stderr, "%s START\n", __FUNCTION__);
     int error = 0;
     int fd;
     string fpath;
+    vector<string>      tokens;
+    string servername;
+    string filename;
+    string userQueriesPath;
+    string queryFilePath;
+    ServerInfo* serverInfo;
 
     fpath = CalculateDumpPath(path);
-    fprintf(stderr, "\tOriginal path = %s\n\tConverted path =%s\n", path, fpath.c_str());
     // Open the file.
     //
     fd = open(fpath.c_str(), fi->flags);
@@ -898,7 +789,7 @@ OpenLocalImpl(
 
     if (!error)
     {
-        // For DMV file, fetch the content.
+        // For dbfs file, fetch the content.
         //
         if (IsDbfsFile(path))
         {
@@ -928,8 +819,6 @@ OpenLocalImpl(
                     //
                     queryFilePath = StringFormat("%s/%s", userQueriesPath.c_str(), filename.c_str());
                     
-                    fprintf(stderr, "Execute: %s\nResult: %s\n", queryFilePath.c_str(), fpath.c_str());
-
                     // Execute the custom query and put the output to the output file
                     // in the dump directory.
                     //
@@ -954,7 +843,6 @@ OpenLocalImpl(
         fi->fh = -1;
     }
 
-    fprintf(stderr, "%s FINISH with result %d\n", __FUNCTION__, error);
     return error;
 }
 
@@ -975,7 +863,6 @@ ReadLocalImpl(
     off_t offset,
     struct fuse_file_info* fi)
 {
-    fprintf(stderr, "%s START\n", __FUNCTION__);
     int fd = 0;
     int result = -1;
 
@@ -985,7 +872,6 @@ ReadLocalImpl(
 
     if (fd != -1)
     {
-        fprintf(stderr, "\t** Trying to read with FD = %d\n", fd);
         result = pread(fd, buf, size, offset);
         if (result == -1)
         {
@@ -994,7 +880,6 @@ ReadLocalImpl(
 
         CloseFileDesciptorIfOpened(fi, fd);
     }
-    fprintf(stderr, "%s FINISH with result %d\n", __FUNCTION__, result);
     return result;
 }
 
@@ -1015,18 +900,16 @@ WriteLocalImpl(
     off_t offset,
     struct fuse_file_info* fi)
 {
-    fprintf(stderr, "%s START\n", __FUNCTION__);
     int     fd;
     string  fpath;
     int     result = 0;
 
-    if (!IsDmvFile(path))
+    if (!IsDbfsFile(path))
     {
         GetFileDescriptorForPath(path, fi, fd);
 
         if (fd != -1)
         {
-            fprintf(stderr, "\t** Trying to write with FD = %d\n", fd);
             result = pwrite(fd, buf, size, offset);
             if (result == -1)
             {
@@ -1038,12 +921,11 @@ WriteLocalImpl(
     }
     else
     {
-        // It is not permitted to write to the DMV file.
+        // It is not permitted to write to the dbfs file.
         //
-        PrintMsg("Cannot write to the DMV files.\n");
+        PrintMsg("Cannot write to the dbfs files.\n");
         result = -EPERM;
     }
-    fprintf(stderr, "%s FINISH with result %d\n", __FUNCTION__, result);
     return result;
 }
 
@@ -1062,18 +944,15 @@ StatfsLocalImpl(
     const char* path,
     struct statvfs* stbuf)
 {
-    fprintf(stderr, "%s START\n", __FUNCTION__);
     int     result;
     string  fpath;
 
     fpath = CalculateDumpPath(path);
-    fprintf(stderr, "\tOriginal path = %s\n\tConverted path =%s\n", path, fpath.c_str());
     result = statvfs(fpath.c_str(), stbuf);
     if (result == -1)
     {
         result = ReturnErrnoAndPrintError(__FUNCTION__, "statvfs failed");
     }
-    fprintf(stderr, "%s FINISH with result %d\n", __FUNCTION__, result);
     return result;
 }
 
@@ -1095,10 +974,9 @@ ReleaseLocalImpl(
     const char* path,
     struct fuse_file_info* fi)
 {
-    fprintf(stderr, "%s START\n", __FUNCTION__);
     int result = 0;
 
-    if (IsDmvFile(path))
+    if (IsDbfsFile(path))
     {
         // Reset the DMV file.
         //
@@ -1110,14 +988,12 @@ ReleaseLocalImpl(
         }
     }
 
-    fprintf(stderr, "\t** Trying to CLOSE FD = %lu\n", fi->fh);
     result = close(fi->fh);
     if (result == -1)
     {
         result = ReturnErrnoAndPrintError(__FUNCTION__,
                                           "close failed");
     }
-    fprintf(stderr, "%s FINISH with result %d\n", __FUNCTION__, result);
     return result;
 }
 
@@ -1161,7 +1037,6 @@ FallocateLocalImpl(
     off_t length,
     struct fuse_file_info* fi)
 {
-    fprintf(stderr, "%s START\n", __FUNCTION__);
     int     fd;
     string  fpath;
     int     result = 0;
@@ -1181,7 +1056,6 @@ FallocateLocalImpl(
 
         CloseFileDesciptorIfOpened(fi, fd);
     }
-    fprintf(stderr, "%s FINISH with result %d\n", __FUNCTION__, result);
     return result;
 }
 
@@ -1202,18 +1076,15 @@ SetxattrLocalImpl(
     size_t size, 
     int flags)
 {
-    fprintf(stderr, "%s START\n", __FUNCTION__);
     int     result;
     string  fpath;
 
     fpath = CalculateDumpPath(path);
-    fprintf(stderr, "\tOriginal path = %s\n\tConverted path =%s\n", path, fpath.c_str());
     result = lsetxattr(fpath.c_str(), name, value, size, flags);
     if (result == -1)
     {
         result = -errno;
     }
-    fprintf(stderr, "%s FINISH with result %d\n", __FUNCTION__, result);
     return result;
 }
 
@@ -1233,18 +1104,15 @@ GetxattrLocalImpl(
     char* value,
     size_t size)
 {
-    fprintf(stderr, "%s START\n", __FUNCTION__);
     int     result;
     string  fpath;
 
     fpath = CalculateDumpPath(path);
-    fprintf(stderr, "\tOriginal path = %s\n\tConverted path =%s\n", path, fpath.c_str());
     result = lgetxattr(fpath.c_str(), name, value, size);
     if (result == -1)
     {
         result = -errno;
     }
-    fprintf(stderr, "%s FINISH with result %d\n", __FUNCTION__, result);
     return result;
 }
 
@@ -1263,18 +1131,15 @@ ListxattrLocalImpl(
     char* list,
     size_t size)
 {
-    fprintf(stderr, "%s START\n", __FUNCTION__);
     int     result;
     string  fpath;
 
     fpath = CalculateDumpPath(path);
-    fprintf(stderr, "\tOriginal path = %s\n\tConverted path =%s\n", path, fpath.c_str());
     result = llistxattr(fpath.c_str(), list, size);
     if (result == -1)
     {
         result = -errno;
     }
-    fprintf(stderr, "%s FINISH with result %d\n", __FUNCTION__, result);
     return result;
 }
 
@@ -1292,18 +1157,15 @@ RemovexattrLocalImpl(
     const char* path,
     const char* name)
 {
-    fprintf(stderr, "%s START\n", __FUNCTION__);
     int     result;
     string  fpath;
 
     fpath = CalculateDumpPath(path);
-    fprintf(stderr, "\tOriginal path = %s\n\tConverted path =%s\n", path, fpath.c_str());
     result = lremovexattr(fpath.c_str(), name);
     if (result == -1)
     {
         result = -errno;
     }
-    fprintf(stderr, "%s FINISH with result %d\n", __FUNCTION__, result);
     return result;
 }
 
@@ -1487,9 +1349,6 @@ StartFuse(
     buffer = strdup("direct_io");
     assert(buffer);
     argv[argc++] = buffer;
-
-    //std::thread t(CheckForCustomQueries);
-    //t.detach();
 
     PrintMsg("Starting fuse\n");
 
