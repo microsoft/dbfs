@@ -1204,7 +1204,7 @@ InitializeSQLFs(
     for (auto&& itr : g_ServerInfoMap)
     {
         entry = itr.second;
-        CreateDMVFiles(itr.first, 
+        CreateDbfsFiles(itr.first,
             entry->m_hostname, 
             entry->m_username,
             entry->m_password, 

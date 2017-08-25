@@ -61,16 +61,16 @@ bool
 IsDbfsFile(
     const char* path);
 
-// This method creates the empty DMV files for a given server.
+// This method creates the empty DMV files and custom query files for a given server.
 // The virtual location of the files (as seen) is <MOUNT DIR>/<SERVER NAME>/.
 //
 void
-CreateDMVFiles(
-    string servername,
-    string hostname,
-    string username,
-    string password,
-    int version);
+CreateDbfsFiles(
+    const string& servername,
+    const string& hostname,
+    const string& username,
+    const string& password,
+    const int version);
 
 // This method exits the program and in doing so the function DestroySQLFs
 // is called.
