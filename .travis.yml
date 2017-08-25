@@ -1,0 +1,10 @@
+os: linux
+sudo: True 
+language: cpp
+compiler: gcc
+install:
+        - sudo apt-get install freetds-dev fuse libfuse2 libfuse-dev libattr1-dev libavahi-common-dev libunwind-dev make devscripts debhelper pkg-config git clang++-3.7 -y
+script: 
+        - mkdir dbfs_build
+        - cd dbfs_build
+        - make package-ubuntu
