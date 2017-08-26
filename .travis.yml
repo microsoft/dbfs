@@ -1,11 +1,17 @@
 os: linux
 dist: trusty
-sudo: True 
-language: cpp
+sudo: required 
+language: c
+
+compiler: clang
+addons:
+        apt:
+                sources:
+                        - ubuntu-toolchain-r-test
+                        - llvm-toolchain-precise-3.7
+                packages:
+                        - clang-3.7
 install:
-        - sudo apt-get install freetds-dev fuse libfuse2 libfuse-dev libattr1-dev libavahi-common-dev make devscripts debhelper pkg-config git -y
-        - sudo apt-get clang++-3.7 libunwind-dev
+        - sudo apt-get install freetds-dev fuse libfuse2 libfuse-dev libattr1-dev libavahi-common-dev make devscripts debhelper pkg-config libunwind-dev -y
 script: 
-        - mkdir dbfs_build
-        - cd dbfs_build
         - make package-ubuntu
