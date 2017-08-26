@@ -11,7 +11,10 @@ addons:
                         - llvm-toolchain-precise-3.7
                 packages:
                         - clang-3.7
+env: CXX=clang++-3.7 OMPI_CXX=clang++-3.7 OMPI_CC=clang-3.7
+
 install:
         - sudo apt-get install freetds-dev fuse libfuse2 libfuse-dev libattr1-dev libavahi-common-dev make devscripts debhelper pkg-config libunwind-dev -y
 script: 
+        - ls
         - make package-ubuntu
