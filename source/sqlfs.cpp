@@ -815,19 +815,22 @@ OpenLocalImpl(
                 {
                     userQueriesPath = serverInfo->m_customQueriesPath;
 
-                    // Construct the full path name to the query file
-                    //
-                    queryFilePath = StringFormat("%s/%s", userQueriesPath.c_str(), filename.c_str());
-                    
-                    // Execute the custom query and put the output to the output file
-                    // in the dump directory.
-                    //
-                    ExecuteCustomQuery(
-                        queryFilePath,
-                        fpath,
-                        serverInfo->m_hostname, 
-                        serverInfo->m_username,
-                        serverInfo->m_password);
+                    if (!userQueriesPath.empty())
+                    {
+                        // Construct the full path name to the query file
+                        //
+                        queryFilePath = StringFormat("%s/%s", userQueriesPath.c_str(), filename.c_str());
+
+                        // Execute the custom query and put the output to the output file
+                        // in the dump directory.
+                        //
+                        ExecuteCustomQuery(
+                            queryFilePath,
+                            fpath,
+                            serverInfo->m_hostname, 
+                            serverInfo->m_username,
+                            serverInfo->m_password);
+                    }
                 }
             }
             else
