@@ -5,4 +5,5 @@ script:
         - if [ "$TRAVIS_BRANCH" = "master" -a "$TRAVIS_PULL_REQUEST" = "false" ]; exit 0; fi
         - if [ "$TRAVIS_PULL_REQUEST_BRANCH" != "" ]; docker run -it -v /var/run/docker.sock:/var/run/docker.sock ubuntu:latest sh -c "apt-get update ; apt-get install freetds-dev fuse libfuse2 libfuse-dev libattr1-dev libavahi-common-dev make devscripts debhelper pkg-config libunwind-dev clang++-3.7 git make -y ; git clone -b $TRAVIS_PULL_REQUEST_BRANCH https://github.com/Microsoft/dbfs.git ; cd dbfs; make package-ubuntu"; fi
         - if [ "$TRAVIS_PULL_REQUEST_BRANCH" != "" ];  exit 0; fi
-        
+        - if [ "$TRAVIS_BRANCH" != "" ]; docker run -it -v /var/run/docker.sock:/var/run/docker.sock ubuntu:latest sh -c "apt-get update ; apt-get install freetds-dev fuse libfuse2 libfuse-dev libattr1-dev libavahi-common-dev make devscripts debhelper pkg-config libunwind-dev clang++-3.7 git make -y ; git clone -b $TRAVIS_BRANCH https://github.com/Microsoft/dbfs.git ; cd dbfs; make package-ubuntu"; fi
+        - if [ "$TRAVIS_BRANCH" != "" ];  exit 0; fi
