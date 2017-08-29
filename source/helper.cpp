@@ -253,6 +253,43 @@ IsDbfsFile(
 }
 
 // ---------------------------------------------------------------------------
+// Method: CreateCustomQueriesDir
+//
+// Description:
+//    Create a custom query directory and populate the directory with
+// custom query output file. The file is empty until it is opened. When
+// the file is opened, the content will be populated.
+//
+// Returns:
+//    VOID
+//
+static void
+CreateCustomQueriesDir(
+    const string& dumpDir,
+    const string& servername)
+{
+    int error;
+
+    // Create the custom query folder for each server.
+    //
+    string customQueryFolderPath = dumpDir + LINUX_PATH_DELIM + CUSTOM_QUERY_FOLDER_NAME;
+    error = mkdir(customQueryFolderPath.c_str(), DEFAULT_PERMISSIONS);
+    if (error == 0)
+    {
+        // Create custom query output files.
+        //
+        CreateCustomQueriesOutputFiles(
+            servername,
+            customQueryFolderPath);
+    }
+    else
+    {
+        PrintMsg("mkdir failed for %s- %s\n", customQueryFolderPath.c_str(),
+                 strerror(errno));
+    }
+}
+
+// ---------------------------------------------------------------------------
 // Method: CreateDMVFiles
 //
 // Description:
@@ -269,59 +306,35 @@ IsDbfsFile(
 // Returns:
 //    VOID
 //
-void
+static void
 CreateDMVFiles(
-    string servername,
-    string hostname,
-    string username,
-    string password,
-    int version)
+    const string& dumpDir,
+    const string& servername,
+    const string& hostname,
+    const string& username,
+    const string& password,
+    const int version)
 {
     string          dmvQuery;
-    string          fpath;
+    string          filepath;
     string          responseString;
-    int             result;
+    int             error;
     vector<string>  filenames;
     int             numEntries;
 
-    fpath = CalculateDumpPath(servername);
-
-    // Creating folder for this server's data.
+    // Query SQL server for all the DMV files to be created.
     //
-    result = mkdir(fpath.c_str(), DEFAULT_PERMISSIONS);
-    if (result)
-    {
-        PrintMsg("mkdir failed for %s- %s\n", fpath.c_str(), 
-            strerror(errno));
-    }
-
-    // Create the custom query folder for each server.
+    // ** Note **
+    // schema_id = 4 selects DMV's (leaves out INFORMATION_SCHEMA).
     //
-    string customQueryFolderPath = fpath + LINUX_PATH_DELIM + CUSTOM_QUERY_FOLDER_NAME;
-    result = mkdir(customQueryFolderPath.c_str(), DEFAULT_PERMISSIONS);
-    if (result)
+    dmvQuery = "SELECT name from sys.system_views where schema_id = 4";
+    error = ExecuteQuery(dmvQuery, responseString, hostname,
+        username, password, TYPE_TSV);
+    if (error)
     {
-        PrintMsg("mkdir failed for %s- %s\n", customQueryFolderPath.c_str(),
-                 strerror(errno));
+        PrintMsg("Failed to query DMV list\n");
     }
-
-    if (!result)
-    {
-        // Query SQL server for all the DMV files to be created.
-        //
-        // ** Note **
-        // schema_id = 4 selects DMV's (leaves out INFORMATION_SCHEMA).
-        //
-        dmvQuery = "SELECT name from sys.system_views where schema_id = 4";
-        result = ExecuteQuery(dmvQuery, responseString, hostname,
-            username, password, TYPE_TSV);
-        if (result)
-        {
-            PrintMsg("ExecuteQuery failed\n");
-        }
-    }
-
-    if (!result)
+    else
     {
         // Tokenising response to extract DMV names.
         //
@@ -344,20 +357,59 @@ CreateDMVFiles(
 
             // Create the regular file - TSV.
             //
-            fpath = StringFormat("%s/%s/%s", g_UserPaths.m_dumpPath.c_str(), servername.c_str(), filenames[i].c_str());
-            CreateFile(fpath.c_str());
+            filepath = StringFormat("%s/%s", dumpDir.c_str(), filenames[i].c_str());
+            CreateFile(filepath.c_str());
 
             if (version >= 16)
             {
                 // Creating the json file.
                 //
-                fpath = StringFormat("%s.json", fpath.c_str());
-                CreateFile(fpath.c_str());
+                filepath = StringFormat("%s.json", filepath.c_str());
+                CreateFile(filepath.c_str());
             }
         }
     }
+}
+
+// ---------------------------------------------------------------------------
+// Method: CreateDbfsFiles
+//
+// Description:
+//    This method creates the empty DMV files and custom query files
+//    for a given server. The location of the files (as seen) is
+//    <MOUNT DIR>/<SERVER NAME>/. Of course the files are actually getting
+//    created in the dump directory.
+//
+// Returns:
+//    VOID
+//
+void
+CreateDbfsFiles(
+    const string& servername,
+    const string& hostname,
+    const string& username,
+    const string& password,
+    const int version)
+{
+    string          fpath;
+    int             error;
+
+    fpath = CalculateDumpPath(servername);
+
+    // Creating folder for this server's data.
+    //
+    error = mkdir(fpath.c_str(), DEFAULT_PERMISSIONS);
+    if (error == 0)
+    {
+        CreateCustomQueriesDir(fpath, servername);
+
+        CreateDMVFiles(fpath, servername, hostname, username, password, version);
+    }
     else
     {
+        PrintMsg("mkdir failed for %s- %s\n", fpath.c_str(), 
+            strerror(errno));
+
         PrintMsg("There was an error creating the folders to hold the server DMV files. Exiting.\n");
 
         // Abort in case of any error.

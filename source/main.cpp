@@ -383,8 +383,9 @@ CheckAllSetPaths(void)
 static bool
 ParseSectionEntry(
     map<std::string, SectionNameValuePair>::iterator sectionItr,
-    string entryName,
-    string& entryValue)
+    const string& entryName,
+    string& entryValue,
+    bool optional = false)
 {
     bool status;
     auto&& entryItr = sectionItr->second.begin();
@@ -404,15 +405,18 @@ ParseSectionEntry(
     }
     else
     {
-        fprintf(stderr, "No \"%s\" entry for section %s.\n",
-            entryName.c_str(),
-            sectionItr->first.c_str());
+        if (!optional)
+        {
+            fprintf(stderr, "No \"%s\" entry for section %s.\n",
+                entryName.c_str(),
+                sectionItr->first.c_str());
+
+            status = false;
+        }
 
         // Clear the output string since no such section was found
         //
         entryValue.clear();
-
-        status = false;
     }
 
     return status;
@@ -590,8 +594,8 @@ ParseConfigFile(void)
             }
             if (status)
             {
-                status = ParseSectionEntry(sectionItr, "customQueriesPath", customQueriesPath);
-                if (status)
+                status = ParseSectionEntry(sectionItr, "customQueriesPath", customQueriesPath, true);
+                if (status && !customQueriesPath.empty())
                 {
                     char* tempPtr = realpath(customQueriesPath.c_str(), NULL);
                     if (tempPtr)
