@@ -29,12 +29,12 @@ Note: DBFS for SUSE linux and apt-get/yum package installs for Ubuntu/Red Hat co
 # Quick Start 
 Change directory to a directory where you want to create your config file and mounting directory. Example:
 ``` sh
-$ cd ~/demo
+cd ~/demo
 ``` 
 
 Create a directory you want the DMVs to mount to
-``` 
-$ mkdir dmv
+``` sh 
+mkdir dmv
 ``` 
  
 Create a file to store the configuration
@@ -43,50 +43,60 @@ touch dmvtool.config
 ``` 
  
 Edit the config file using an editor like VI
-``` 
+``` sh
 vi dmvtool.config
 ``` 
 The contents of the file should be
-``` 
+``` sh
 [server friendly name]
 hostname=[HOSTNAME]
 username=[DATBASE_LOGIN]
 password=[PASSWORD]
 version=[VERSION]
+customQueriesPath=[PATH_TO_CUSTOM_QUERY_FOLDER]
+
 ``` 
 Example:\
 [server]\
 hostname=00.000.000.000\
 username=MyUserName\
 password=MyPassword\
-version=16
+version=16\
+customQueriesPath=/home/vin/customquery
 
 Run the tool
-```
+``` sh
 dbfs -c ./[Config File] -m ./[Mount Directory]
 ```
  
 Example
-```
+``` sh
 dbfs -c ./dmvtool.config -m ./dmv
 ```
  
 See DMV in the directory
-```
+``` sh
 cd dmv
 ```
  
 You should see the list of your friendly server names by running 'ls'
-```
+``` sh
 cd <server friendly name>
 ```
  
-You should see the list of DMVs as files by running 'ls'. To Look at the contents of one of the files:
-```
+You should see the list of DMVs as files by running 'ls'. To look at the contents of one of the files:
+``` sd
 more <dmv file name>
 ```
- 
 You can pipe the output from DMVTool to tools like cut (CSV) and jq (JSON) to format the data for better readability.
+
+You can view the results of the custom queries placed in the CustomQueriesPath will show in the `customQueries` subdirectory:
+``` sd
+cd customQueries
+ls
+cat <filename of custom query>
+```
+NOTE: Today, this feature only supports a single query and only 1 result set.
  
 By default, DBFS runs in background. You can shut it down using the following commands:
 ```
@@ -116,14 +126,16 @@ Configuration file needs to be of the following format:\
 hostname=<>\
 username=<>\
 password=<>\
-version=<>
+version=<>\
+customQueriesPath
 
 Example:\
 [server]\
 hostname=00.000.000.000\
 username=MyUserName\
 password=MyPassword\
-version=16
+version=16\
+customQueriesPath=/home/vin/customquery
 
 The password is optional. If it is not provided for a server entry - user will be prompted for the password.
 There can be multiple such entries in the configuration file.
@@ -143,6 +155,10 @@ $ cat dm_os_sys_memory.json | python -m json.tool
 $ awk '{print $1,$5}' dm_os_sys_memory | column -t
 $ join -j 1 -o 1.1,1.16,1.17,2.5,2.8 <(sort -k1 dm_exec_connections) <(sort -k1 dm_exec_connections) -t $'\t' | sort -n -k1 | column -t
 ```
+
+Custom Query Example
+<img src="https://raw.githubusercontent.com/vin-yu/dbfs-1/master/common/customquery.gif" alt="demo" style="width:800px;"/>
+
 
 # Building
  Install the following packages:
