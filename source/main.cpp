@@ -385,7 +385,7 @@ ParseSectionEntry(
     map<std::string, SectionNameValuePair>::iterator sectionItr,
     const string& entryName,
     string& entryValue,
-    bool optional)
+    bool optional = false)
 {
     bool status;
     auto&& entryItr = sectionItr->second.begin();
@@ -578,15 +578,15 @@ ParseConfigFile(void)
             //
             if (status)
             {
-                status = ParseSectionEntry(sectionItr, "hostname", hostname, false);
+                status = ParseSectionEntry(sectionItr, "hostname", hostname);
             }
             if (status)
             {
-                status = ParseSectionEntry(sectionItr, "username", username, false);
+                status = ParseSectionEntry(sectionItr, "username", username);
             }
             if (status)
             {
-                status = ParseSectionEntry(sectionItr, "version", version, false);
+                status = ParseSectionEntry(sectionItr, "version", version);
                 if (status)
                 {
                     status = convertToInt(version, versionInt);
@@ -611,7 +611,7 @@ ParseConfigFile(void)
             }
             if (status)
             {
-                status = ParseSectionEntry(sectionItr, "password", password, false);
+                status = ParseSectionEntry(sectionItr, "password", password);
 
                 // Query user for password in case nothing in config file
                 //
