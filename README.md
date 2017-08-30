@@ -7,18 +7,18 @@ DBFS uses FUSE to mount MS SQL Server DMVs as a virtual file system. This gives 
 # Installation
 Ubuntu:
 ``` sh
-sudo wget https://github.com/Microsoft/dbfs/releases/download/0.1.5/dbfs_0.1.5_amd64.deb
-sudo dpkg -i dbfs_0.1.5_amd64.deb
+sudo wget https://github.com/Microsoft/dbfs/releases/download/0.2.5/dbfs_0.2.5_amd64.deb
+sudo dpkg -i dbfs_0.2.5_amd64.deb
 sudo apt-get install -f
 ```
 
 RHEL:
 ``` sh
-sudo wget https://github.com/Microsoft/dbfs/releases/download/0.1.5/dbfs-0.1.5-0.x86_64.rpm
+sudo wget https://github.com/Microsoft/dbfs/releases/download/0.2.5/dbfs-0.2.5-0.x86_64.rpm
 sudo wget https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
 sudo rpm -ivh epel-release-latest-7.noarch.rpm
 sudo yum update
-sudo yum install dbfs-0.1.5-0.x86_64.rpm
+sudo yum install dbfs-0.2.5-0.x86_64.rpm
 ```
 
 Check if your installation was successfull by running: 
