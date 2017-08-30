@@ -27,8 +27,6 @@ void
 ExecuteCustomQuery(
     const string& queryFilePath,
     const string& queryResultPath,
-    const string& hostname,
-    const string& username,
     const string& password)
 {
     string responseString;
@@ -86,28 +84,6 @@ ExecuteCustomQuery(
 // Returns:
 //    none.
 //
-void 
-RemoveCustomQueriesOutputFiles(
-    DIR* dp,
-    const string& dumpPath)
-{
-    struct dirent*  de;
-    string          filepath;
-
-    // Remove old files from custom query dump directory
-    //
-    while ((de = readdir(dp)) != NULL)
-    {
-        if (de->d_type == DT_REG)
-        {
-            filepath = StringFormat("%s/%s", dumpPath.c_str(), de->d_name);
-
-            // Do the best to remove the file
-            //
-            (void) remove(filepath.c_str());
-        }
-    }
-}
 
 // ---------------------------------------------------------------------------
 // Method: CreateCustomQueriesOutputFiles
@@ -147,7 +123,7 @@ CreateCustomQueriesOutputFiles(
                     // Create new files with the same name in
                     // the dump directory for storing results
                     //
-                    filepath = StringFormat("%s/%s", dumpPath.c_str(), de->d_name);
+                    filepath = StringFormat("adding more stuff%s/%s", dumpPath.c_str(), de->d_name);
                     CreateFile(filepath.c_str());
                 }
             }
