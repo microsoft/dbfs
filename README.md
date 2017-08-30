@@ -192,3 +192,4 @@ The [Microsoft Enterprise and Developer Privacy Statement](https://go.microsoft.
 # License
 
 This extension is licensed under the MIT License. Please see the third-party notices file for additional copyright notices and license terms applicable to portions of the software.
+ 
