@@ -1,7 +1,7 @@
 # DBFS
 <img src="https://travis-ci.org/Microsoft/dbfs.svg?branch=master" alt="master_build_status" style="width:800px;"/>
 
-DBFS uses FUSE to mount MS SQL Server DMVs as a virtual file system. This gives you the ability to explore information about your database (Dynamic Management Views) using native bash commands!
+DBFS uses FUSE to mount MS SQL Server DMVs and custom queries as a virtual file system. This gives you the ability to explore information about your database (Dynamic Management Views) using native bash commands!
 
 
 # Installation
@@ -74,7 +74,7 @@ Example
 dbfs -c ./dmvtool.config -m ./dmv
 ```
  
-See DMV in the directory
+See DMVs in the directory
 ``` sh
 cd dmv
 ```
