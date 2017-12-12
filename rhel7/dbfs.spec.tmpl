@@ -9,11 +9,11 @@ License:        MIT
 
 Requires: glibc, fuse, fuse-devel, freetds
 
-%description
-This package contains the Microsoft DBFS tool which can be used to fetch certain DMVs from SQL Servers using FUSE filesystem.
-
 %{?systemd_requires}
 BuildRequires: systemd
+
+%description
+This package contains the Microsoft DBFS tool which can be used to fetch certain DMVs from SQL Servers using FUSE filesystem.
 
 %install
 cd %{_srcdir}
