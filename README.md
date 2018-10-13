@@ -21,7 +21,7 @@ sudo yum update
 sudo yum install dbfs-0.2.5-0.x86_64.rpm
 ```
 
-Check if your installation was successfull by running: 
+Check if your installation was successful by running: 
     `dbfs -h`
 
 Note: DBFS for SUSE linux and apt-get/yum package installs for Ubuntu/Red Hat coming soon!
@@ -50,7 +50,7 @@ The contents of the file should be
 ``` sh
 [server friendly name]
 hostname=[HOSTNAME]
-username=[DATBASE_LOGIN]
+username=[DATABASE_LOGIN]
 password=[PASSWORD]
 version=[VERSION]
 customQueriesPath=[PATH_TO_CUSTOM_QUERY_FOLDER]
